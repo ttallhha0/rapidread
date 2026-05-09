@@ -10,7 +10,7 @@ A clean and modern RSVP (Rapid Serial Visual Presentation) speed-reading web app
 - **Fully Client-Side:** All processing happens in your browser. Your files are not uploaded to any server.
 
 ## How to Use
-- 
+- visit https://ttallhha0.github.io/rapidread/ 
 
 ## Tech Stack
 - HTML5
