@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Reader (RSVP)</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo-icon">📖</div>
+            <h1>Speed Reader</h1>
+            <p class="subtitle">Focus, read faster, and save time.</p>
+        </header>
+
+        <main>
+            <!-- Top Controls: File Upload & WPM -->
+            <div class="controls-top">
+                <label class="custom-file-upload" title="Upload Book" id="dropZone">
+                    <input type="file" id="fileInput" accept=".txt,.epub" />
+                    <span class="upload-text" id="uploadText">📁 Select Book (.txt, .epub) or drag and drop</span>
+                </label>
+                
+                <div class="wpm-control">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <label for="wpmSlider">Speed</label>
+                        <span id="wpmDisplay" style="color: var(--accent-success); font-weight: 800; font-size: 14px;">300 WPM</span>
+                    </div>
+                    <div class="wpm-slider-wrapper" style="width: 100%;">
+                        <input type="range" id="wpmSlider" value="300" min="50" max="1000" step="10" class="styled-slider">
+                    </div>
+                </div>
+
+                <div class="smart-speed-control">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="smartSpeedToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">Smart Pacing</span>
+                </div>
+            </div>
+
+            <!-- Navigation Controls (Chapters & Word Index) -->
+            <div class="navigation-controls" id="navControls" style="display: none;">
+                <div class="nav-item">
+                    <label for="chapterSelect">Chapter</label>
+                    <select id="chapterSelect">
+                        <option value="0">Loading...</option>
+                    </select>
+                </div>
+                <div class="nav-item">
+                    <label for="wordIndexInput">Word / Page</label>
+                    <input type="number" id="wordIndexInput" value="0" min="0">
+                </div>
+                <div class="nav-item search-item">
+                    <label for="searchInput">Search Phrase</label>
+                    <div style="display: flex; gap: 8px; width: 100%;">
+                        <input type="text" id="searchInput" placeholder="Search text...">
+                        <button id="searchBtn" class="btn btn-search" title="Find next">🔍</button>
+                    </div>
+                    <span id="searchResult" style="font-size: 11px; color: #f59e0b; margin-top: 4px; display: block; min-height: 14px;"></span>
+                </div>
+            </div>
+
+            <!-- Reader Box (RSVP Engine Display) -->
+            <div class="reader-wrapper" id="readerWrapper">
+                <button id="fullscreenBtn" class="fullscreen-btn" title="Toggle Fullscreen">⛶</button>
+                <div class="reader-notch reader-notch-top"></div>
+                
+                <div id="readerContainer" class="reader-box">
+                    <span class="placeholder-text">Load a text to begin reading...</span>
+                </div>
+                
+                <div class="reader-notch reader-notch-bottom"></div>
+                
+                <!-- Fullscreen Overlay Controls (Only visible in fullscreen) -->
+                <div class="fullscreen-controls">
+                    <button id="fsPlayPauseBtn" class="fs-btn" disabled>▶ Play</button>
+                </div>
+            </div>
+
+            <!-- Bottom Controls: Playback -->
+            <div class="controls-bottom">
+                <button id="playPauseBtn" class="btn btn-play" disabled>
+                    <span class="btn-icon" id="playPauseIcon">▶</span> <span id="playPauseText">Play</span>
+                </button>
+                <button id="resetBtn" class="btn btn-reset">
+                    <span class="btn-icon">⏹</span> Reset
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- JSZip (for EPUB support) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <!-- App Entry Point -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

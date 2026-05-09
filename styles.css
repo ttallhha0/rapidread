@@ -1,0 +1,573 @@
+/* ==========================================================================
+   CSS Değişkenleri & Temel Ayarlar
+   ========================================================================== */
+   :root {
+    --bg-color: #0f172a;
+    --card-bg: rgba(30, 41, 59, 0.6);
+    --reader-bg: #020617;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    --accent-primary: #6366f1; /* İndigo */
+    --accent-success: #10b981; /* Zümrüt Yeşili */
+    --accent-warning: #f59e0b; /* Kehribar */
+    --accent-danger: #ef4444;  /* Kırmızı */
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+    background-color: var(--bg-color);
+    /* Arka plana yumuşak ortam aydınlatmaları (ambient glow) ekliyoruz */
+    background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+    background-attachment: fixed;
+}
+
+/* ==========================================================================
+   Uygulama Konteyneri (Glassmorphism UI)
+   ========================================================================== */
+.app-container {
+    width: 100%;
+    max-width: 800px;
+    background: var(--card-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 28px;
+    padding: 48px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
+                0 0 0 1px rgba(255,255,255,0.05) inset;
+    box-sizing: border-box;
+}
+
+/* Başlık Alanı */
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.logo-icon {
+    font-size: 42px;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+}
+
+h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(to right, #fff, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    margin: 8px 0 0 0;
+    color: var(--text-muted);
+    font-size: 16px;
+}
+
+/* ==========================================================================
+   Üst Kontroller
+   ========================================================================== */
+.controls-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    gap: 20px;
+}
+
+/* Dosya Yükleme Butonu */
+input[type="file"] {
+    display: none;
+}
+
+.custom-file-upload {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+    padding: 14px 24px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-main);
+    font-weight: 500;
+    flex: 1;
+    text-align: center;
+}
+
+.custom-file-upload:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+}
+
+.custom-file-upload.drag-over {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: var(--accent-primary);
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+}
+
+/* WPM Kontrolü (Slider) */
+.wpm-control {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 200px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 12px 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.wpm-control label {
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+/* Styled Range Slider */
+.styled-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    outline: none;
+    margin-top: 10px;
+}
+
+.styled-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-success);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+    transition: transform 0.2s;
+}
+
+.styled-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.styled-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-success);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+    transition: transform 0.2s;
+}
+
+.styled-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* ==========================================================================
+   Okuma Motoru (RSVP) Görüntüleme Alanı
+   ========================================================================== */
+.reader-wrapper {
+    position: relative;
+    width: 100%;
+    margin: 40px 0;
+}
+
+.reader-box {
+    background: var(--reader-bg);
+    border-radius: 20px;
+    height: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 10px 30px rgba(0, 0, 0, 0.8), 
+                0 1px 0 rgba(255,255,255,0.05);
+    border: 1px solid rgba(0, 0, 0, 1);
+    overflow: hidden;
+    position: relative;
+    font-size: 48px;
+    font-weight: bold;
+    font-family: 'Arial', sans-serif;
+}
+
+.placeholder-text {
+    color: var(--text-muted);
+    font-size: 16px;
+    font-weight: 400;
+}
+
+/* Kırmızı harfin (ORP) tam merkeze geldiğini vurgulayan kılavuz çizgiler */
+.reader-notch {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 12px;
+    background-color: rgba(255, 255, 255, 0.15);
+    z-index: 10;
+}
+
+.reader-notch-top {
+    top: -12px;
+    border-radius: 2px 2px 0 0;
+}
+
+.reader-notch-bottom {
+    bottom: -12px;
+    border-radius: 0 0 2px 2px;
+}
+
+/* ==========================================================================
+   Alt Kontroller (Butonlar)
+   ========================================================================== */
+.controls-bottom {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 32px;
+}
+
+.btn {
+    padding: 14px 28px;
+    border-radius: 14px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+}
+
+.btn:active {
+    transform: scale(0.96);
+}
+
+.btn:disabled, .fs-btn:disabled {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    cursor: not-allowed;
+}
+
+.btn-play {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 10px 20px -10px rgba(16, 185, 129, 0.6);
+}
+
+.btn-play:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px -10px rgba(16, 185, 129, 0.8);
+}
+
+.btn-pause {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 10px 20px -10px rgba(245, 158, 11, 0.6);
+}
+
+.btn-pause:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px -10px rgba(245, 158, 11, 0.8);
+}
+
+.btn-reset {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-reset:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Responsive Tasarım: Mobilde düzenin bozulmaması için */
+@media (max-width: 600px) {
+    .controls-top {
+        flex-direction: column;
+    }
+    
+    .wpm-control {
+        width: 100%;
+        justify-content: space-between;
+        box-sizing: border-box;
+    }
+    
+    .controls-bottom {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .navigation-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .nav-item select, .nav-item input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+
+/* ==========================================================================
+   Navigation Controls (Chapter & Word Select)
+   ========================================================================== */
+.navigation-controls {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 24px;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.nav-item label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.nav-item select, .nav-item input {
+    background: var(--reader-bg);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-main);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.nav-item select:focus, .nav-item input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2), inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.nav-item select {
+    width: 250px;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px top 50%;
+    background-size: 12px auto;
+}
+
+.nav-item select option {
+    background: var(--bg-color);
+    color: var(--text-main);
+}
+
+.nav-item input {
+    width: 120px;
+}
+
+.btn-search {
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-search:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================================================
+   Smart Speed Toggle & Fullscreen
+   ========================================================================== */
+.controls-top {
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.smart-speed-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.toggle-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: .4s;
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--text-muted);
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+input:checked + .slider:before {
+    transform: translateX(20px);
+    background-color: white;
+}
+
+.reader-wrapper {
+    position: relative;
+}
+
+.fullscreen-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 6px 10px;
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.fullscreen-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.reader-wrapper:fullscreen {
+    background: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+}
+
+.reader-wrapper:fullscreen .reader-box {
+    font-size: clamp(80px, 8vw, 150px);
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reader-wrapper:fullscreen .reader-notch {
+    display: none;
+}
+
+.reader-wrapper:fullscreen .fullscreen-btn {
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 24px;
+    padding: 10px 14px;
+    border-radius: 12px;
+}
+
+.fullscreen-controls {
+    display: none;
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+}
+
+.reader-wrapper:fullscreen .fullscreen-controls {
+    display: flex;
+    gap: 20px;
+}
+
+.fs-btn {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+    padding: 14px 28px;
+    border-radius: 16px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s;
+}
+
+.fs-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
