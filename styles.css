@@ -1,17 +1,21 @@
 /* ==========================================================================
    CSS Değişkenleri & Temel Ayarlar
    ========================================================================== */
-   :root {
+:root {
     --bg-color: #0f172a;
     --card-bg: rgba(30, 41, 59, 0.6);
     --reader-bg: #020617;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
-    
-    --accent-primary: #6366f1; /* İndigo */
-    --accent-success: #10b981; /* Zümrüt Yeşili */
-    --accent-warning: #f59e0b; /* Kehribar */
-    --accent-danger: #ef4444;  /* Kırmızı */
+
+    --accent-primary: #6366f1;
+    /* İndigo */
+    --accent-success: #10b981;
+    /* Zümrüt Yeşili */
+    --accent-warning: #f59e0b;
+    /* Kehribar */
+    --accent-danger: #ef4444;
+    /* Kırmızı */
 }
 
 body {
@@ -25,7 +29,7 @@ body {
     color: var(--text-main);
     background-color: var(--bg-color);
     /* Arka plana yumuşak ortam aydınlatmaları (ambient glow) ekliyoruz */
-    background-image: 
+    background-image:
         radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
         radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
     background-attachment: fixed;
@@ -43,8 +47,8 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 28px;
     padding: 48px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
-                0 0 0 1px rgba(255,255,255,0.05) inset;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
     box-sizing: border-box;
 }
 
@@ -57,7 +61,7 @@ header {
 .logo-icon {
     font-size: 42px;
     margin-bottom: 12px;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
 }
 
 h1 {
@@ -127,7 +131,7 @@ input[type="file"] {
     background: rgba(0, 0, 0, 0.4);
     padding: 12px 20px;
     border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .wpm-control label {
@@ -196,8 +200,8 @@ input[type="file"] {
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: inset 0 10px 30px rgba(0, 0, 0, 0.8), 
-                0 1px 0 rgba(255,255,255,0.05);
+    box-shadow: inset 0 10px 30px rgba(0, 0, 0, 0.8),
+        0 1px 0 rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(0, 0, 0, 1);
     overflow: hidden;
     position: relative;
@@ -262,7 +266,8 @@ input[type="file"] {
     transform: scale(0.96);
 }
 
-.btn:disabled, .fs-btn:disabled {
+.btn:disabled,
+.fs-btn:disabled {
     background: rgba(255, 255, 255, 0.08) !important;
     color: rgba(255, 255, 255, 0.4) !important;
     box-shadow: none !important;
@@ -300,22 +305,80 @@ input[type="file"] {
     transform: translateY(-2px);
 }
 
+/* Word Counter (current word index display + copy) */
+.word-counter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 8px 14px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.word-counter-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.word-counter-value {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--accent-success);
+    font-variant-numeric: tabular-nums;
+    min-width: 32px;
+    text-align: center;
+}
+
+.word-counter-copy {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.word-counter-copy:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
 /* Responsive Tasarım: Mobilde düzenin bozulmaması için */
 @media (max-width: 600px) {
+    .app-container {
+        padding: 24px 18px;
+        border-radius: 20px;
+    }
+
+    .reader-box {
+        font-size: 32px;
+        height: 130px;
+    }
+
     .controls-top {
         flex-direction: column;
     }
-    
+
     .wpm-control {
         width: 100%;
         justify-content: space-between;
         box-sizing: border-box;
     }
-    
+
     .controls-bottom {
         flex-direction: column;
     }
-    
+
     .btn {
         width: 100%;
         justify-content: center;
@@ -326,9 +389,17 @@ input[type="file"] {
         align-items: stretch;
     }
 
-    .nav-item select, .nav-item input {
+    .nav-item select,
+    .nav-item input {
         width: 100%;
         box-sizing: border-box;
+    }
+}
+
+@media (max-width: 380px) {
+    .reader-box {
+        font-size: 26px;
+        height: 120px;
     }
 }
 
@@ -343,7 +414,7 @@ input[type="file"] {
     background: rgba(0, 0, 0, 0.25);
     padding: 20px;
     border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .nav-item {
@@ -361,9 +432,10 @@ input[type="file"] {
     letter-spacing: 0.5px;
 }
 
-.nav-item select, .nav-item input {
+.nav-item select,
+.nav-item input {
     background: var(--reader-bg);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-main);
     padding: 12px 16px;
     border-radius: 12px;
@@ -371,12 +443,13 @@ input[type="file"] {
     font-size: 15px;
     outline: none;
     transition: all 0.3s ease;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.nav-item select:focus, .nav-item input:focus {
+.nav-item select:focus,
+.nav-item input:focus {
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2), inset 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .nav-item select {
@@ -455,11 +528,14 @@ input[type="file"] {
 .slider {
     position: absolute;
     cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: rgba(255, 255, 255, 0.1);
     transition: .4s;
     border-radius: 24px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .slider:before {
@@ -474,12 +550,12 @@ input[type="file"] {
     border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
     background-color: var(--accent-primary);
     border-color: var(--accent-primary);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
     transform: translateX(20px);
     background-color: white;
 }

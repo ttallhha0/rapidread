@@ -16,6 +16,7 @@ export class RsvpReader {
         this.guncelIndeks = 0;
         this.okuyorMu = false;
         this.smartSpeedEnabled = true;
+        this.onIndexChange = null;
         
         // Varsayılan olarak Türkçe sözlükle başlar, metin yüklenince otomatik güncellenir
         this.aktifSozluk = trWords;
@@ -46,6 +47,7 @@ export class RsvpReader {
             if (this.containerElement) {
                 kelimeyiEkranaYaz(mevcutKelime, this.containerElement);
             }
+            if (this.onIndexChange) this.onIndexChange(this.guncelIndeks);
 
             // 2. Algoritma modülü ile bu kelimenin ekranda kalma süresini hesapla
             // (Aktif olan dilin yaygın kelimeler sözlüğü kullanılıyor)
@@ -82,6 +84,7 @@ export class RsvpReader {
         if (this.containerElement) {
             this.containerElement.innerHTML = '';
         }
+        if (this.onIndexChange) this.onIndexChange(0);
     }
 
     /**
@@ -119,6 +122,7 @@ export class RsvpReader {
             if (this.containerElement) {
                 kelimeyiEkranaYaz(this.kelimeler[this.guncelIndeks], this.containerElement);
             }
+            if (this.onIndexChange) this.onIndexChange(this.guncelIndeks);
         }
     }
 

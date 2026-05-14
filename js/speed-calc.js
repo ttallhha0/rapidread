@@ -17,12 +17,14 @@ export function hesaplaKelimeSuresi(kelime, hedefWPM, commonWordsArray, isSmart 
         return Math.round(sure);
     }
 
-    // Check if the word ends with punctuation (dot or comma)
-    const sonundaNoktaVeyaVirgulVarMi = /[.,]$/.test(kelime);
+    // Check trailing punctuation types for cooldown
+    const sonundaUcNoktaVarMi = /\.{3,}$|…$/.test(kelime);
+    const sonundaNoktaliVirgulVeyaIkiNoktaVarMi = /[;:]$/.test(kelime);
+    const sonundaNoktaVeyaVirgulVarMi = !sonundaUcNoktaVarMi && /[.,!?]$/.test(kelime);
 
     // Clean the word to check length and if it's common
     // (Remove trailing punctuation and lowercase it)
-    const temizKelime = kelime.replace(/[.,!?;:]+$/, '').toLowerCase();
+    const temizKelime = kelime.replace(/[.,!?;:…]+$/, '').toLowerCase();
 
     // Rule 1: Shorten duration by 15% if the word is common in the detected language
     if (commonWordsArray.includes(temizKelime)) {
@@ -34,9 +36,19 @@ export function hesaplaKelimeSuresi(kelime, hedefWPM, commonWordsArray, isSmart 
         sure *= 1.20; // 20% slower
     }
 
-    // Rule 3: Double the duration if the word ends with a dot or a comma
+    // Rule 3: Double the duration if the word ends with a dot, comma, ! or ?
     if (sonundaNoktaVeyaVirgulVarMi) {
         sure *= 2; // 2x slower
+    }
+
+    // Rule 4: Semicolon or colon endings get a moderate cooldown
+    if (sonundaNoktaliVirgulVeyaIkiNoktaVarMi) {
+        sure *= 1.7;
+    }
+
+    // Rule 5: Ellipsis ("...") gets the longest cooldown
+    if (sonundaUcNoktaVarMi) {
+        sure *= 2.5;
     }
 
     // Return as rounded integer

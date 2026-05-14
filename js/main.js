@@ -31,6 +31,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Varsayılan WPM değerini 300 olarak belirliyoruz.
     const okuyucu = new RsvpReader([], readerContainer, 300);
 
+    const wordCounterValue = document.getElementById('wordCounterValue');
+    const copyWordIndexBtn = document.getElementById('copyWordIndexBtn');
+
+    okuyucu.onIndexChange = (idx) => {
+        if (wordCounterValue) wordCounterValue.textContent = idx;
+        if (wordIndexInput && document.activeElement !== wordIndexInput) {
+            wordIndexInput.value = idx;
+        }
+    };
+
+    if (copyWordIndexBtn) {
+        copyWordIndexBtn.addEventListener('click', async () => {
+            const value = String(okuyucu.guncelIndeks);
+            try {
+                await navigator.clipboard.writeText(value);
+            } catch (err) {
+                const ta = document.createElement('textarea');
+                ta.value = value;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            }
+            const original = copyWordIndexBtn.textContent;
+            copyWordIndexBtn.textContent = '✓';
+            setTimeout(() => { copyWordIndexBtn.textContent = original; }, 1200);
+        });
+    }
+
     // ---------------------------------------------------------
     // EVENT LISTENERS
     // ---------------------------------------------------------
