@@ -236,6 +236,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 playPauseBtn.classList.add('btn-play');
             }
             if (fsPlayPauseBtn) fsPlayPauseBtn.textContent = '▶ Play';
+            // Tam ekranda durduğunda word-counter (copy) görünsün
+            if (readerWrapper) readerWrapper.classList.add('paused');
         } else {
             // Duraklatıldıysa başlat
             okuyucu.play();
@@ -246,6 +248,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 playPauseBtn.classList.add('btn-pause');
             }
             if (fsPlayPauseBtn) fsPlayPauseBtn.textContent = '⏸ Pause';
+            // Okuma başlayınca word-counter'ı gizle
+            if (readerWrapper) readerWrapper.classList.remove('paused');
         }
     };
 

@@ -628,18 +628,42 @@ input:checked+.slider:before {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Tam ekranda word-counter (kopyalama butonu) gizle */
+/* Tam ekranda word-counter varsayılan olarak gizli; sadece durdurulduğunda göster */
 .reader-wrapper:fullscreen .word-counter {
     display: none;
 }
 
-/* Tam ekranda fullscreen-controls (play/pause butonu) gizle */
+.reader-wrapper:fullscreen.paused .word-counter {
+    display: flex;
+    position: fixed;
+    bottom: 130px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    animation: fadeInUp 0.25s ease;
+}
+
+/* Tam ekranda fullscreen-controls (play/pause) altta overlay olarak göster */
 .fullscreen-controls {
     display: none;
 }
 
 .reader-wrapper:fullscreen .fullscreen-controls {
-    display: none;
+    display: flex;
+    position: fixed;
+    bottom: 48px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    gap: 20px;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 .fs-btn {
