@@ -24,7 +24,7 @@ export function kelimeyiEkranaYaz(kelime, containerElement) {
     // Flexbox ve `flex: 1` mantığıyla sağ ve sol boşlukları eşitleyerek
     // ortadaki kırmızı harfi (ORP) tam merkeze hizalıyoruz.
     containerElement.innerHTML = `
-        <div class="word-display" style="display: flex; justify-content: center; align-items: center; width: 100%;">
+        <div class="word-display" style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;">
             <span style="flex: 1; text-align: right;">${solKisim}</span>
             <span style="color: red;">${orpHarfi}</span>
             <span style="flex: 1; text-align: left;">${sagKisim}</span>
