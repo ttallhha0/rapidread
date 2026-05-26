@@ -35,7 +35,7 @@ export function hesaplaKelimeSuresi(kelime, hedefWPM, commonWordsArray, isSmart 
     // Each extra character beyond 6 adds a fixed amount of extra time.
     // Calibration: 6 chars → base, 12 chars → 1.5x base → each char adds ~8.33% of base
     const CHAR_THRESHOLD = 6;
-    const PER_CHAR_FACTOR = 0.0833; // ~8.33% of base per extra character
+    const PER_CHAR_FACTOR = 0.0455; // ~4.55% of base per extra character
     if (temizKelime.length > CHAR_THRESHOLD) {
         const extraChars = temizKelime.length - CHAR_THRESHOLD;
         sure *= (1 + extraChars * PER_CHAR_FACTOR);
