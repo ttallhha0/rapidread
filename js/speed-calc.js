@@ -31,9 +31,14 @@ export function hesaplaKelimeSuresi(kelime, hedefWPM, commonWordsArray, isSmart 
         sure *= 0.85; // 15% faster
     }
 
-    // Rule 2: Increase duration by 20% if the word is longer than 10 characters
-    if (temizKelime.length > 10) {
-        sure *= 1.20; // 20% slower
+    // Rule 2: Linear per-character slowdown for words longer than 6 characters.
+    // Each extra character beyond 6 adds a fixed amount of extra time.
+    // Calibration: 6 chars → base, 12 chars → 1.5x base → each char adds ~8.33% of base
+    const CHAR_THRESHOLD = 6;
+    const PER_CHAR_FACTOR = 0.0833; // ~8.33% of base per extra character
+    if (temizKelime.length > CHAR_THRESHOLD) {
+        const extraChars = temizKelime.length - CHAR_THRESHOLD;
+        sure *= (1 + extraChars * PER_CHAR_FACTOR);
     }
 
     // Rule 3: Double the duration if the word ends with a dot, comma, ! or ?
