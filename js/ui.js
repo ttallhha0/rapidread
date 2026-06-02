@@ -1,11 +1,12 @@
 /**
  * Verilen kelimeyi ORP (Optimal Recognition Point) noktasına göre ayırır,
- * ORP harfini kırmızı yapar ve bu harf her zaman merkezde olacak şekilde HTML'e çizer.
+ * ORP harfini kırmızı (veya ikileme ise mor) yapar ve bu harf her zaman merkezde olacak şekilde HTML'e çizer.
  * 
  * @param {string} kelime - Ekranda gösterilecek kelime
  * @param {HTMLElement} containerElement - Kelimenin yazdırılacağı HTML div elementi
+ * @param {boolean} isRepeat - Ardışık aynı kelime mi? (ikileme tespiti)
  */
-export function kelimeyiEkranaYaz(kelime, containerElement) {
+export function kelimeyiEkranaYaz(kelime, containerElement, isRepeat = false) {
     if (!kelime || !containerElement) return;
 
     const len = kelime.length;
@@ -21,12 +22,15 @@ export function kelimeyiEkranaYaz(kelime, containerElement) {
     const orpHarfi = kelime.charAt(orpIndex);
     const sagKisim = kelime.substring(orpIndex + 1);
 
+    // İkileme durumunda ORP harfi mor (#8b5cf6), normal durumda kırmızı
+    const orpColor = isRepeat ? '#8b5cf6' : 'red';
+
     // Flexbox ve `flex: 1` mantığıyla sağ ve sol boşlukları eşitleyerek
     // ortadaki kırmızı harfi (ORP) tam merkeze hizalıyoruz.
     containerElement.innerHTML = `
         <div class="word-display" style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;">
             <span style="flex: 1; text-align: right;">${solKisim}</span>
-            <span style="color: red;">${orpHarfi}</span>
+            <span style="color: ${orpColor};">${orpHarfi}</span>
             <span style="flex: 1; text-align: left;">${sagKisim}</span>
         </div>
     `;

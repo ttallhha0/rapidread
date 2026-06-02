@@ -584,6 +584,27 @@ input:checked+.slider:before {
     background: rgba(255, 255, 255, 0.2);
 }
 
+/* Dark mode toggle butonu - normalde gizli, sadece tam ekranda görünür */
+.fs-darkmode-btn {
+    display: none;
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 6px 10px;
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.fs-darkmode-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 .reader-wrapper:fullscreen {
     background: linear-gradient(170deg, #f5ead6 0%, #f0e0c6 30%, #e8d5b3 70%, #dfc9a5 100%);
     display: flex;
@@ -712,4 +733,96 @@ input:checked+.slider:before {
     border: 1px solid rgba(58, 46, 30, 0.1) !important;
     box-shadow: none !important;
     cursor: not-allowed;
+}
+
+/* Tam ekranda dark mode toggle butonunu göster */
+.reader-wrapper:fullscreen .fs-darkmode-btn {
+    display: block;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(58, 46, 30, 0.15);
+    color: #5a4a32;
+    font-size: 22px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    z-index: 1000;
+    border: 1px solid rgba(58, 46, 30, 0.2);
+}
+
+.reader-wrapper:fullscreen .fs-darkmode-btn:hover {
+    background: rgba(58, 46, 30, 0.3);
+}
+
+/* ==========================================================================
+   DARK MODE (Tam Ekran)
+   Varsayılan koyu tema - .fs-dark sınıfıyla aktif
+   ========================================================================== */
+.reader-wrapper.fs-dark:fullscreen {
+    background: #0f172a;
+    background-image:
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+}
+
+.reader-wrapper.fs-dark:fullscreen .reader-box {
+    color: var(--text-main);
+}
+
+.reader-wrapper.fs-dark:fullscreen .fullscreen-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.reader-wrapper.fs-dark:fullscreen .fullscreen-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.reader-wrapper.fs-dark:fullscreen .fs-darkmode-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.reader-wrapper.fs-dark:fullscreen .fs-darkmode-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.reader-wrapper.fs-dark:fullscreen .fs-btn {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.reader-wrapper.fs-dark:fullscreen .fs-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.reader-wrapper.fs-dark:fullscreen .fs-btn:disabled {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.reader-wrapper.fs-dark:fullscreen.paused .word-counter {
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-main);
+}
+
+.reader-wrapper.fs-dark:fullscreen.paused .word-counter .word-counter-label {
+    color: var(--text-muted);
+}
+
+.reader-wrapper.fs-dark:fullscreen.paused .word-counter .word-counter-value {
+    color: var(--accent-success);
+}
+
+.reader-wrapper.fs-dark:fullscreen.paused .word-counter .word-counter-copy {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
 }

@@ -323,4 +323,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // 8. Dark Mode Toggle (Tam Ekranda Karanlık/Aydınlık Mod)
+    const fsDarkModeBtn = document.getElementById('fsDarkModeBtn');
+    if (fsDarkModeBtn && readerWrapper) {
+        fsDarkModeBtn.addEventListener('click', () => {
+            readerWrapper.classList.toggle('fs-dark');
+            const isDark = readerWrapper.classList.contains('fs-dark');
+            fsDarkModeBtn.textContent = isDark ? '☀️' : '🌙';
+            fsDarkModeBtn.title = isDark ? 'Light Mode' : 'Dark Mode';
+        });
+    }
 });

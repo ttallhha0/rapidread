@@ -17,9 +17,17 @@ export class RsvpReader {
         this.okuyorMu = false;
         this.smartSpeedEnabled = true;
         this.onIndexChange = null;
+        this.oncekiKelime = null; // İkileme tespiti için önceki kelimeyi takip et
         
         // Varsayılan olarak Türkçe sözlükle başlar, metin yüklenince otomatik güncellenir
         this.aktifSozluk = trWords;
+    }
+
+    /**
+     * Kelimeyi noktalama işaretlerinden arındırıp küçük harfe çevirerek karşılaştırma yapar
+     */
+    _temizle(kelime) {
+        return kelime.replace(/[.,!?;:…""''()\[\]]+/g, '').toLowerCase();
     }
 
     /**
@@ -43,11 +51,18 @@ export class RsvpReader {
         while (this.okuyorMu && this.guncelIndeks < this.kelimeler.length) {
             const mevcutKelime = this.kelimeler[this.guncelIndeks];
 
+            // İkileme tespiti: Önceki kelimeyle aynı mı?
+            const isRepeat = this.oncekiKelime !== null &&
+                this._temizle(mevcutKelime) === this._temizle(this.oncekiKelime);
+
             // 1. Arayüz modülü ile kelimeyi ekranda göster
             if (this.containerElement) {
-                kelimeyiEkranaYaz(mevcutKelime, this.containerElement);
+                kelimeyiEkranaYaz(mevcutKelime, this.containerElement, isRepeat);
             }
             if (this.onIndexChange) this.onIndexChange(this.guncelIndeks);
+
+            // Önceki kelimeyi güncelle
+            this.oncekiKelime = mevcutKelime;
 
             // 2. Algoritma modülü ile bu kelimenin ekranda kalma süresini hesapla
             // (Aktif olan dilin yaygın kelimeler sözlüğü kullanılıyor)
@@ -80,6 +95,7 @@ export class RsvpReader {
         this.okuyorMu = false;
         this.guncelIndeks = 0;
         this.kelimeler = [];
+        this.oncekiKelime = null;
         
         if (this.containerElement) {
             this.containerElement.innerHTML = '';
@@ -119,9 +135,14 @@ export class RsvpReader {
         const parsedIndex = parseInt(index, 10);
         if (!isNaN(parsedIndex) && parsedIndex >= 0 && parsedIndex < this.kelimeler.length) {
             this.guncelIndeks = parsedIndex;
+            // İkileme tespiti: Önceki kelimeyle karşılaştır
+            const mevcutKelime = this.kelimeler[this.guncelIndeks];
+            const isRepeat = this.oncekiKelime !== null &&
+                this._temizle(mevcutKelime) === this._temizle(this.oncekiKelime);
             if (this.containerElement) {
-                kelimeyiEkranaYaz(this.kelimeler[this.guncelIndeks], this.containerElement);
+                kelimeyiEkranaYaz(mevcutKelime, this.containerElement, isRepeat);
             }
+            this.oncekiKelime = mevcutKelime;
             if (this.onIndexChange) this.onIndexChange(this.guncelIndeks);
         }
     }

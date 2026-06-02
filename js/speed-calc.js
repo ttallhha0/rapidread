@@ -40,7 +40,7 @@ export function hesaplaKelimeSuresi(kelime, hedefWPM, commonWordsArray, isSmart 
         const extraChars = temizKelime.length - CHAR_THRESHOLD;
         sure *= (1 + extraChars * PER_CHAR_FACTOR);
     }
-
+    
     // Rule 3: Double the duration if the word ends with a dot, comma, ! or ?
     if (sonundaNoktaVeyaVirgulVarMi) {
         sure *= 2; // 2x slower
