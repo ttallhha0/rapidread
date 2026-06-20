@@ -50,6 +50,72 @@ function parseTxt(file) {
     });
 }
 
+function parseXml(xmlString, errorMessage) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xmlString, "application/xml");
+
+    if (doc.querySelector("parsererror")) {
+        throw new Error(errorMessage);
+    }
+
+    return doc;
+}
+
+function getElementsByLocalName(root, localName) {
+    return Array.from(root.getElementsByTagName("*"))
+        .filter(element => element.localName === localName);
+}
+
+function safeDecodePath(path) {
+    try {
+        return decodeURIComponent(path);
+    } catch (error) {
+        return path;
+    }
+}
+
+function getZipFile(zip, path) {
+    return zip.file(path) || zip.file(safeDecodePath(path));
+}
+
+function normalizeZipPath(path) {
+    const parts = [];
+
+    path.split('/').forEach((part) => {
+        if (!part || part === '.') return;
+        if (part === '..') {
+            parts.pop();
+            return;
+        }
+        parts.push(part);
+    });
+
+    return parts.join('/');
+}
+
+function resolveEpubPath(baseDir, href) {
+    const withoutFragment = href.split('#')[0];
+    return normalizeZipPath(baseDir + safeDecodePath(withoutFragment));
+}
+
+function getChapterTitle(doc, fallbackTitle) {
+    const heading = doc.querySelector('h1, h2, h3, title');
+    const title = heading ? heading.textContent.trim() : '';
+    if (!title) return fallbackTitle;
+
+    const decoder = document.createElement('textarea');
+    decoder.innerHTML = title;
+    return decoder.value;
+}
+
+function extractReadableText(doc, fallbackText) {
+    doc.querySelectorAll('script, style, noscript').forEach(element => element.remove());
+
+    const source = doc.body || doc.documentElement;
+    const text = source ? source.textContent : fallbackText;
+    return text.replace(/\s+/g, ' ').trim();
+}
+
 /**
  * Parses an EPUB file, extracting text from HTML files in spine order.
  * Extracts headings for chapter titles and builds word index offsets.
@@ -67,38 +133,40 @@ async function parseEpub(file) {
         const containerFile = zip.file("META-INF/container.xml");
         if (!containerFile) throw new Error("Invalid EPUB: container.xml not found.");
         const containerXml = await containerFile.async("string");
-
-        const rootfileMatch = containerXml.match(/full-path=["']([^"']+)["']/);
-        if (!rootfileMatch) throw new Error("Invalid EPUB: OPF path not found.");
-        const opfPath = rootfileMatch[1];
+        const containerDoc = parseXml(containerXml, "Invalid EPUB: container.xml could not be parsed.");
+        const rootfile = getElementsByLocalName(containerDoc, "rootfile")
+            .find(element => element.getAttribute("full-path"));
+        if (!rootfile) throw new Error("Invalid EPUB: OPF path not found.");
+        const opfPath = rootfile.getAttribute("full-path");
 
         // 2. Read OPF file
-        const opfFile = zip.file(opfPath);
+        const opfFile = getZipFile(zip, opfPath);
         if (!opfFile) throw new Error("Invalid EPUB: OPF file missing.");
         const opfXml = await opfFile.async("string");
+        const opfDoc = parseXml(opfXml, "Invalid EPUB: OPF file could not be parsed.");
 
         const opfDir = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/') + 1) : '';
 
         // 3. Extract manifest (id -> href)
         const manifest = {};
-        const itemRegex = /<item\s+([^>]+)>/gi;
-        let itemMatch;
-        while ((itemMatch = itemRegex.exec(opfXml)) !== null) {
-            const attrStr = itemMatch[1];
-            const idM = attrStr.match(/id=["']([^"']+)["']/);
-            const hrefM = attrStr.match(/href=["']([^"']+)["']/);
-            if (idM && hrefM) {
-                manifest[idM[1]] = hrefM[1];
+        getElementsByLocalName(opfDoc, "item").forEach((item) => {
+            const id = item.getAttribute("id");
+            const href = item.getAttribute("href");
+            const mediaType = item.getAttribute("media-type") || "";
+            if (id && href) {
+                manifest[id] = { href, mediaType };
             }
-        }
+        });
 
         // 4. Extract reading order (spine)
-        const spineRegex = /<itemref\s+[^>]*idref=["']([^"']+)["'][^>]*>/gi;
         const spine = [];
-        let spineMatch;
-        while ((spineMatch = spineRegex.exec(opfXml)) !== null) {
-            spine.push(spineMatch[1]);
-        }
+        getElementsByLocalName(opfDoc, "itemref").forEach((itemref) => {
+            const idref = itemref.getAttribute("idref");
+            const linear = (itemref.getAttribute("linear") || "").toLowerCase();
+            if (idref && linear !== "no") {
+                spine.push(idref);
+            }
+        });
 
         // 5. Read HTML files sequentially, extract chapters and words
         const chapters = [];
@@ -106,10 +174,14 @@ async function parseEpub(file) {
         let globalWordIndex = 0;
 
         for (const idref of spine) {
-            const href = manifest[idref];
-            if (href) {
-                const filePath = opfDir + decodeURIComponent(href);
-                const htmlFile = zip.file(filePath);
+            const manifestItem = manifest[idref];
+            if (manifestItem) {
+                const { href, mediaType } = manifestItem;
+                const isReadableDocument = !mediaType || /html/i.test(mediaType);
+                if (!isReadableDocument) continue;
+
+                const filePath = resolveEpubPath(opfDir, href);
+                const htmlFile = getZipFile(zip, filePath);
                 
                 if (htmlFile) {
                     const htmlStr = await htmlFile.async("string");
@@ -119,22 +191,8 @@ async function parseEpub(file) {
                     const doc = parser.parseFromString(htmlStr, "text/html");
 
                     // Find chapter title (fallback to generic name)
-                    let chapterTitle = `Chapter ${chapters.length + 1}`;
-                    const heading = doc.querySelector('h1, h2, h3, title');
-                    if (heading && heading.textContent.trim()) {
-                        chapterTitle = heading.textContent.trim();
-                    }
-                    
-                    // Do not add empty chapters
-                    const bodyContent = doc.body ? doc.body.innerHTML : htmlStr;
-                    
-                    // Clean tags
-                    const cleanText = bodyContent
-                        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
-                        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
-                        .replace(/<[^>]+>/g, ' ')
-                        .replace(/&nbsp;/gi, ' ')
-                        .replace(/&[a-z0-9]+;/gi, ' ');
+                    const chapterTitle = getChapterTitle(doc, `Chapter ${chapters.length + 1}`);
+                    const cleanText = extractReadableText(doc, htmlStr);
 
                     const fileWords = cleanText.split(/\s+/).filter(k => k.trim().length > 0);
                     

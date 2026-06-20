@@ -6,7 +6,7 @@
     <title>Speed Reader (RSVP)</title>
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20260620-8">
 </head>
 <body>
     <div class="app-container">
@@ -19,7 +19,7 @@
         <main>
             <!-- Top Controls: File Upload & WPM -->
             <div class="controls-top">
-                <label class="custom-file-upload" title="Upload Book" id="dropZone">
+                <label class="custom-file-upload" title="Upload Book" id="dropZone" aria-label="Upload TXT or EPUB book">
                     <input type="file" id="fileInput" accept=".txt,.epub" />
                     <span class="upload-text" id="uploadText">📁 Select Book (.txt, .epub) or drag and drop</span>
                 </label>
@@ -30,16 +30,25 @@
                         <span id="wpmDisplay" style="color: var(--accent-success); font-weight: 800; font-size: 14px;">300 WPM</span>
                     </div>
                     <div class="wpm-slider-wrapper" style="width: 100%;">
-                        <input type="range" id="wpmSlider" value="300" min="50" max="1000" step="10" class="styled-slider">
+                        <input type="range" id="wpmSlider" value="300" min="50" max="1000" step="10" class="styled-slider" aria-label="Reading speed in words per minute">
                     </div>
                 </div>
 
                 <div class="smart-speed-control">
                     <label class="toggle-switch">
-                        <input type="checkbox" id="smartSpeedToggle" checked>
+                        <input type="checkbox" id="smartSpeedToggle" checked aria-label="Toggle smart pacing">
                         <span class="slider"></span>
                     </label>
                     <span class="toggle-label">Smart Pacing</span>
+                </div>
+
+                <div class="chunk-control">
+                    <label for="chunkSizeSelect">Chunk</label>
+                    <select id="chunkSizeSelect" aria-label="Words per step">
+                        <option value="1">1 word</option>
+                        <option value="2">2 words</option>
+                        <option value="3">3 words</option>
+                    </select>
                 </div>
             </div>
 
@@ -59,42 +68,71 @@
                     <label for="searchInput">Search Phrase</label>
                     <div style="display: flex; gap: 8px; width: 100%;">
                         <input type="text" id="searchInput" placeholder="Search text...">
-                        <button id="searchBtn" class="btn btn-search" title="Find next">🔍</button>
+                        <button id="searchBtn" class="btn btn-search" title="Find next" aria-label="Find next search result" type="button">🔍</button>
                     </div>
-                    <span id="searchResult" style="font-size: 11px; color: #f59e0b; margin-top: 4px; display: block; min-height: 14px;"></span>
+                    <span id="searchResult" role="status" aria-live="polite" style="font-size: 11px; color: #f59e0b; margin-top: 4px; display: block; min-height: 14px;"></span>
+                </div>
+            </div>
+
+            <div class="reading-stats is-hidden" id="readingStats">
+                <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Reading progress">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="stats-row">
+                    <span class="stat-pill">
+                        <span class="stat-label">Progress</span>
+                        <strong id="progressPercent">0%</strong>
+                    </span>
+                    <span class="stat-pill">
+                        <span class="stat-label">Words</span>
+                        <strong id="progressWords">0 / 0</strong>
+                    </span>
+                    <span class="stat-pill">
+                        <span class="stat-label">Remaining</span>
+                        <strong id="remainingTime">0 min</strong>
+                    </span>
                 </div>
             </div>
 
             <!-- Reader Box (RSVP Engine Display) -->
             <div class="reader-wrapper" id="readerWrapper">
-                <button id="fullscreenBtn" class="fullscreen-btn" title="Toggle Fullscreen">⛶</button>
-                <button id="fsDarkModeBtn" class="fs-darkmode-btn" title="Toggle Dark Mode">🌙</button>
+                <button id="fullscreenBtn" class="fullscreen-btn" title="Toggle Fullscreen" aria-label="Toggle fullscreen" type="button">⛶</button>
+                <button id="fsDarkModeBtn" class="fs-darkmode-btn" title="Toggle Dark Mode" aria-label="Toggle fullscreen theme" type="button">🌙</button>
                 <div class="reader-notch reader-notch-top"></div>
                 
-                <div id="readerContainer" class="reader-box">
+                <div id="readerContainer" class="reader-box" aria-live="polite" aria-label="Current word">
                     <span class="placeholder-text">Load a text to begin reading...</span>
                 </div>
 
                 <div class="word-counter" id="wordCounter">
                     <span class="word-counter-label">Word</span>
                     <span class="word-counter-value" id="wordCounterValue">0</span>
-                    <button id="copyWordIndexBtn" class="word-counter-copy" title="Copy word index">📋</button>
+                    <button id="copyWordIndexBtn" class="word-counter-copy" title="Copy word index" aria-label="Copy current word index" type="button">📋</button>
                 </div>
 
                 <div class="reader-notch reader-notch-bottom"></div>
                 
                 <!-- Fullscreen Overlay Controls (Only visible in fullscreen) -->
+                <div class="fullscreen-side-controls">
+                    <button id="fsPrevWordBtn" class="fs-side-btn fs-side-left" title="Previous word" aria-label="Previous word" type="button" disabled>‹</button>
+                    <button id="fsNextWordBtn" class="fs-side-btn fs-side-right" title="Next word" aria-label="Next word" type="button" disabled>›</button>
+                </div>
                 <div class="fullscreen-controls">
-                    <button id="fsPlayPauseBtn" class="fs-btn" disabled>▶ Play</button>
+                    <div class="fs-wpm-stepper" aria-label="Fullscreen speed controls">
+                        <button id="fsWpmDownBtn" class="fs-stepper-btn" title="Slow down" aria-label="Decrease reading speed" type="button" disabled>-</button>
+                        <span id="fsWpmDisplay" class="fs-wpm-value" aria-live="polite">300 WPM</span>
+                        <button id="fsWpmUpBtn" class="fs-stepper-btn" title="Speed up" aria-label="Increase reading speed" type="button" disabled>+</button>
+                    </div>
+                    <button id="fsPlayPauseBtn" class="fs-btn" disabled type="button">▶ Play</button>
                 </div>
             </div>
 
             <!-- Bottom Controls: Playback -->
             <div class="controls-bottom">
-                <button id="playPauseBtn" class="btn btn-play" disabled>
+                <button id="playPauseBtn" class="btn btn-play" disabled type="button" aria-label="Play reading">
                     <span class="btn-icon" id="playPauseIcon">▶</span> <span id="playPauseText">Play</span>
                 </button>
-                <button id="resetBtn" class="btn btn-reset">
+                <button id="resetBtn" class="btn btn-reset" type="button" aria-label="Reset reader">
                     <span class="btn-icon">⏹</span> Reset
                 </button>
             </div>
@@ -105,6 +143,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <!-- App Entry Point -->
-    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/main.js?v=20260620-8"></script>
 </body>
 </html>

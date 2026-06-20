@@ -25,13 +25,28 @@ export function kelimeyiEkranaYaz(kelime, containerElement, isRepeat = false) {
     // İkileme durumunda ORP harfi mor (#8b5cf6), normal durumda kırmızı
     const orpColor = isRepeat ? '#8b5cf6' : 'red';
 
-    // Flexbox ve `flex: 1` mantığıyla sağ ve sol boşlukları eşitleyerek
-    // ortadaki kırmızı harfi (ORP) tam merkeze hizalıyoruz.
-    containerElement.innerHTML = `
-        <div class="word-display" style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;">
-            <span style="flex: 1; text-align: right;">${solKisim}</span>
-            <span style="color: ${orpColor};">${orpHarfi}</span>
-            <span style="flex: 1; text-align: left;">${sagKisim}</span>
-        </div>
-    `;
+    const wordDisplay = document.createElement('div');
+    wordDisplay.className = 'word-display';
+    wordDisplay.style.display = 'flex';
+    wordDisplay.style.justifyContent = 'center';
+    wordDisplay.style.alignItems = 'center';
+    wordDisplay.style.width = '100%';
+    wordDisplay.style.height = '100%';
+
+    const leftPart = document.createElement('span');
+    leftPart.style.flex = '1';
+    leftPart.style.textAlign = 'right';
+    leftPart.textContent = solKisim;
+
+    const orpLetter = document.createElement('span');
+    orpLetter.style.color = orpColor;
+    orpLetter.textContent = orpHarfi;
+
+    const rightPart = document.createElement('span');
+    rightPart.style.flex = '1';
+    rightPart.style.textAlign = 'left';
+    rightPart.textContent = sagKisim;
+
+    wordDisplay.append(leftPart, orpLetter, rightPart);
+    containerElement.replaceChildren(wordDisplay);
 }

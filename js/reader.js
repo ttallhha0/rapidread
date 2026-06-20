@@ -16,8 +16,10 @@ export class RsvpReader {
         this.guncelIndeks = 0;
         this.okuyorMu = false;
         this.smartSpeedEnabled = true;
+        this.chunkSize = 1;
         this.onIndexChange = null;
         this.oncekiKelime = null; // İkileme tespiti için önceki kelimeyi takip et
+        this.sonGosterilenIndeks = null;
         
         // Varsayılan olarak Türkçe sözlükle başlar, metin yüklenince otomatik güncellenir
         this.aktifSozluk = trWords;
@@ -38,18 +40,37 @@ export class RsvpReader {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    _chunkAl(index) {
+        return this.kelimeler.slice(index, index + this.chunkSize);
+    }
+
+    _chunkMetniAl(index) {
+        return this._chunkAl(index).join(' ');
+    }
+
+    _chunkSuresiHesapla(chunk) {
+        return chunk.reduce((toplamSure, kelime) => {
+            return toplamSure + hesaplaKelimeSuresi(kelime, this.hedefWPM, this.aktifSozluk, this.smartSpeedEnabled);
+        }, 0);
+    }
+
     /**
      * Okumayı başlatır veya kaldığı yerden devam ettirir.
      */
     async play() {
         // Eğer okuma halihazırda devam ediyorsa tekrar çalışmasını engelle
         if (this.okuyorMu) return;
+
+        if (this.sonGosterilenIndeks === this.guncelIndeks) {
+            this.guncelIndeks += this.chunkSize;
+        }
         
         this.okuyorMu = true;
 
         // Duraklatılmadığı (okuyorMu == true) ve kelimeler bitmediği sürece döngüye devam et
         while (this.okuyorMu && this.guncelIndeks < this.kelimeler.length) {
-            const mevcutKelime = this.kelimeler[this.guncelIndeks];
+            const mevcutChunk = this._chunkAl(this.guncelIndeks);
+            const mevcutKelime = mevcutChunk.join(' ');
 
             // İkileme tespiti: Önceki kelimeyle aynı mı?
             const isRepeat = this.oncekiKelime !== null &&
@@ -59,6 +80,7 @@ export class RsvpReader {
             if (this.containerElement) {
                 kelimeyiEkranaYaz(mevcutKelime, this.containerElement, isRepeat);
             }
+            this.sonGosterilenIndeks = this.guncelIndeks;
             if (this.onIndexChange) this.onIndexChange(this.guncelIndeks);
 
             // Önceki kelimeyi güncelle
@@ -66,13 +88,17 @@ export class RsvpReader {
 
             // 2. Algoritma modülü ile bu kelimenin ekranda kalma süresini hesapla
             // (Aktif olan dilin yaygın kelimeler sözlüğü kullanılıyor)
-            const sure = hesaplaKelimeSuresi(mevcutKelime, this.hedefWPM, this.aktifSozluk, this.smartSpeedEnabled);
+            const sure = this._chunkSuresiHesapla(mevcutChunk);
 
             // 3. Hesaplanan süre kadar bekle
             await this.bekle(sure);
 
+            if (!this.okuyorMu) {
+                break;
+            }
+
             // 4. Sonraki kelimeye geç
-            this.guncelIndeks++;
+            this.guncelIndeks += this.chunkSize;
         }
 
         // Eğer tüm kelimeler okunduysa durumu false yap
@@ -96,6 +122,7 @@ export class RsvpReader {
         this.guncelIndeks = 0;
         this.kelimeler = [];
         this.oncekiKelime = null;
+        this.sonGosterilenIndeks = null;
         
         if (this.containerElement) {
             this.containerElement.innerHTML = '';
@@ -129,6 +156,16 @@ export class RsvpReader {
     }
 
     /**
+     * Her RSVP adımında kaç kelime gösterileceğini ayarlar.
+     */
+    setChunkSize(size) {
+        const parsedSize = parseInt(size, 10);
+        if (!isNaN(parsedSize) && parsedSize >= 1 && parsedSize <= 3) {
+            this.chunkSize = parsedSize;
+        }
+    }
+
+    /**
      * İstenilen kelime indeksine anında atlar
      */
     setIndex(index) {
@@ -136,12 +173,13 @@ export class RsvpReader {
         if (!isNaN(parsedIndex) && parsedIndex >= 0 && parsedIndex < this.kelimeler.length) {
             this.guncelIndeks = parsedIndex;
             // İkileme tespiti: Önceki kelimeyle karşılaştır
-            const mevcutKelime = this.kelimeler[this.guncelIndeks];
+            const mevcutKelime = this._chunkMetniAl(this.guncelIndeks);
             const isRepeat = this.oncekiKelime !== null &&
                 this._temizle(mevcutKelime) === this._temizle(this.oncekiKelime);
             if (this.containerElement) {
                 kelimeyiEkranaYaz(mevcutKelime, this.containerElement, isRepeat);
             }
+            this.sonGosterilenIndeks = this.guncelIndeks;
             this.oncekiKelime = mevcutKelime;
             if (this.onIndexChange) this.onIndexChange(this.guncelIndeks);
         }
