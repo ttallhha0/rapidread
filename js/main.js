@@ -1,5 +1,5 @@
-import { dosyaOkuVeKelimelereAyir } from './parser.js';
-import { RsvpReader } from './reader.js?v=20260620-8';
+import { dosyaOkuVeKelimelereAyir } from './parser.js?v=20260621-1';
+import { RsvpReader } from './reader.js?v=20260621-1';
 
 // HTML içeriği tamamen yüklendikten sonra olay dinleyicilerini (Event Listeners) ekleyelim
 document.addEventListener('DOMContentLoaded', () => {
