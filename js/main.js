@@ -1,5 +1,5 @@
-import { dosyaOkuVeKelimelereAyir } from './parser.js?v=20260621-1';
-import { RsvpReader } from './reader.js?v=20260621-1';
+import { dosyaOkuVeKelimelereAyir } from './parser.js?v=20260621-3';
+import { RsvpReader } from './reader.js?v=20260621-3';
 
 // HTML içeriği tamamen yüklendikten sonra olay dinleyicilerini (Event Listeners) ekleyelim
 document.addEventListener('DOMContentLoaded', () => {
@@ -9,6 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('fileInput');
     const dropZone = document.getElementById('dropZone');
     const uploadText = document.getElementById('uploadText');
+    const settingsToggle = document.getElementById('settingsToggle');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const languageSelect = document.getElementById('languageSelect');
+    const themeSelect = document.getElementById('themeSelect');
     const wpmSlider = document.getElementById('wpmSlider');
     const wpmDisplay = document.getElementById('wpmDisplay');
     const readerContainer = document.getElementById('readerContainer');
@@ -26,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chunkSizeSelect = document.getElementById('chunkSizeSelect');
     const readerWrapper = document.getElementById('readerWrapper');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const fsDarkModeBtn = document.getElementById('fsDarkModeBtn');
     const fsPlayPauseBtn = document.getElementById('fsPlayPauseBtn');
     const fsPrevWordBtn = document.getElementById('fsPrevWordBtn');
     const fsNextWordBtn = document.getElementById('fsNextWordBtn');
@@ -44,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressPercent = document.getElementById('progressPercent');
     const progressWords = document.getElementById('progressWords');
     const remainingTime = document.getElementById('remainingTime');
+    const resetText = document.getElementById('resetText');
 
     const STORAGE_KEYS = {
         settings: 'rapidread:settings',
@@ -52,7 +58,176 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentBookKey = null;
     let currentBookName = '';
+    let currentLanguage = 'en';
+    let currentTheme = 'midnight';
     let lastProgressSaveAt = 0;
+    const themeValues = ['midnight', 'forest', 'ocean', 'graphite', 'sage', 'rosewood', 'sepia', 'aubergine', 'dawn', 'moss'];
+
+    const translations = {
+        en: {
+            htmlLang: 'en',
+            documentTitle: 'Speed Reader (RSVP)',
+            appTitle: 'Speed Reader',
+            appSubtitle: 'Focus, read faster, and save time.',
+            settings: 'Settings',
+            openSettings: 'Open settings',
+            closeSettings: 'Close settings',
+            language: 'Language',
+            theme: 'Background',
+            themeAria: 'Background theme',
+            themeOptions: ['Midnight', 'Forest Mist', 'Calm Ocean', 'Soft Graphite', 'Sage', 'Rosewood', 'Sepia', 'Aubergine', 'Dawn', 'Moss'],
+            uploadTitle: 'Upload Book',
+            uploadAria: 'Upload TXT or EPUB book',
+            uploadDefault: '📁 Select Book (.txt, .epub) or drag and drop',
+            uploadLoaded: '📖 {name}',
+            speed: 'Speed',
+            wpmAria: 'Reading speed in words per minute',
+            smartPacing: 'Smart Pacing',
+            smartPacingAria: 'Toggle smart pacing',
+            chunk: 'Chunk',
+            chunkAria: 'Words per step',
+            chunkOptions: ['1 word', '2 words', '3 words'],
+            chapter: 'Chapter',
+            loading: 'Loading...',
+            wordPage: 'Word / Page',
+            searchPhrase: 'Search Phrase',
+            searchPlaceholder: 'Search text...',
+            findNext: 'Find next',
+            progress: 'Progress',
+            words: 'Words',
+            remaining: 'Remaining',
+            progressAria: 'Reading progress',
+            currentWordAria: 'Current word',
+            placeholder: 'Load a text to begin reading...',
+            word: 'Word',
+            copyWordIndex: 'Copy word index',
+            previousWord: 'Previous word',
+            nextWord: 'Next word',
+            fullscreenSpeedControls: 'Fullscreen speed controls',
+            slowDown: 'Slow down',
+            decreaseSpeed: 'Decrease reading speed',
+            speedUp: 'Speed up',
+            increaseSpeed: 'Increase reading speed',
+            play: 'Play',
+            pause: 'Pause',
+            playReading: 'Play reading',
+            pauseReading: 'Pause reading',
+            reset: 'Reset',
+            toggleFullscreen: 'Toggle Fullscreen',
+            enterFullscreen: 'Enter fullscreen',
+            exitFullscreen: 'Exit fullscreen',
+            toggleTheme: 'Toggle fullscreen theme',
+            lightMode: 'Light Mode',
+            darkMode: 'Dark Mode',
+            switchLight: 'Switch to light fullscreen theme',
+            switchDark: 'Switch to dark fullscreen theme',
+            done: 'Done',
+            lessThanMinute: '<1 min',
+            minute: 'min',
+            hour: 'h',
+            minuteShort: 'm',
+            invalidFile: 'Please upload only .txt or .epub files.',
+            parseErrorPrefix: 'Error parsing file: ',
+            foundAtWord: 'Found at word {index}',
+            phraseNotFound: 'Phrase not found.'
+        },
+        tr: {
+            htmlLang: 'tr',
+            documentTitle: 'Hızlı Okuyucu (RSVP)',
+            appTitle: 'Hızlı Okuyucu',
+            appSubtitle: 'Odaklan, daha hızlı oku, zaman kazan.',
+            settings: 'Ayarlar',
+            openSettings: 'Ayarları aç',
+            closeSettings: 'Ayarları kapat',
+            language: 'Dil',
+            theme: 'Arka Plan',
+            themeAria: 'Arka plan teması',
+            themeOptions: ['Gece', 'Orman Sisi', 'Sakin Okyanus', 'Yumuşak Grafit', 'Adaçayı', 'Gül Ağacı', 'Sepya', 'Patlıcan', 'Şafak', 'Yosun'],
+            uploadTitle: 'Kitap yükle',
+            uploadAria: 'TXT veya EPUB kitap yükle',
+            uploadDefault: '📁 Kitap seç (.txt, .epub) veya sürükle bırak',
+            uploadLoaded: '📖 {name}',
+            speed: 'Hız',
+            wpmAria: 'Dakikadaki kelime okuma hızı',
+            smartPacing: 'Akıllı Tempo',
+            smartPacingAria: 'Akıllı tempoyu aç/kapat',
+            chunk: 'Parça',
+            chunkAria: 'Her adımda gösterilecek kelime sayısı',
+            chunkOptions: ['1 kelime', '2 kelime', '3 kelime'],
+            chapter: 'Bölüm',
+            loading: 'Yükleniyor...',
+            wordPage: 'Kelime / Sayfa',
+            searchPhrase: 'Aranacak İfade',
+            searchPlaceholder: 'Metin ara...',
+            findNext: 'Sonrakini bul',
+            progress: 'İlerleme',
+            words: 'Kelimeler',
+            remaining: 'Kalan',
+            progressAria: 'Okuma ilerlemesi',
+            currentWordAria: 'Mevcut kelime',
+            placeholder: 'Okumaya başlamak için metin yükle...',
+            word: 'Kelime',
+            copyWordIndex: 'Mevcut kelime indeksini kopyala',
+            previousWord: 'Önceki kelime',
+            nextWord: 'Sonraki kelime',
+            fullscreenSpeedControls: 'Tam ekran hız kontrolleri',
+            slowDown: 'Yavaşlat',
+            decreaseSpeed: 'Okuma hızını azalt',
+            speedUp: 'Hızlandır',
+            increaseSpeed: 'Okuma hızını artır',
+            play: 'Başlat',
+            pause: 'Duraklat',
+            playReading: 'Okumayı başlat',
+            pauseReading: 'Okumayı duraklat',
+            reset: 'Sıfırla',
+            toggleFullscreen: 'Tam ekranı aç/kapat',
+            enterFullscreen: 'Tam ekrana geç',
+            exitFullscreen: 'Tam ekrandan çık',
+            toggleTheme: 'Tam ekran temasını değiştir',
+            lightMode: 'Aydınlık Mod',
+            darkMode: 'Karanlık Mod',
+            switchLight: 'Aydınlık tam ekran temasına geç',
+            switchDark: 'Karanlık tam ekran temasına geç',
+            done: 'Bitti',
+            lessThanMinute: '<1 dk',
+            minute: 'dk',
+            hour: 'sa',
+            minuteShort: 'dk',
+            invalidFile: 'Lütfen sadece .txt veya .epub uzantılı bir dosya yükleyin.',
+            parseErrorPrefix: 'Dosya parse edilirken hata oluştu: ',
+            foundAtWord: '{index}. kelimede bulundu',
+            phraseNotFound: 'İfade bulunamadı.'
+        }
+    };
+
+    const t = (key) => translations[currentLanguage][key] || translations.en[key] || key;
+
+    const setText = (id, text) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = text;
+    };
+
+    const setAttr = (element, attr, value) => {
+        if (element) element.setAttribute(attr, value);
+    };
+
+    const formatBookName = (fileName) => {
+        if (!fileName) return '';
+        if (fileName.length <= 25) return fileName;
+
+        const firstPart = fileName.substring(0, 15);
+        const lastPart = fileName.substring(fileName.length - 8);
+        return `${firstPart}...${lastPart}`;
+    };
+
+    const updateUploadText = () => {
+        if (!uploadText) return;
+        if (currentBookName) {
+            uploadText.textContent = t('uploadLoaded').replace('{name}', formatBookName(currentBookName));
+        } else {
+            uploadText.textContent = t('uploadDefault');
+        }
+    };
 
     const readStorage = (key, fallbackValue = null) => {
         try {
@@ -92,7 +267,9 @@ document.addEventListener('DOMContentLoaded', () => {
         writeStorage(STORAGE_KEYS.settings, {
             wpm: okuyucu.hedefWPM,
             smartSpeedEnabled: okuyucu.smartSpeedEnabled,
-            chunkSize: okuyucu.chunkSize
+            chunkSize: okuyucu.chunkSize,
+            language: currentLanguage,
+            backgroundTheme: currentTheme
         });
     };
 
@@ -122,6 +299,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const savedSettings = readStorage(STORAGE_KEYS.settings);
     if (savedSettings) {
+        if (translations[savedSettings.language]) {
+            currentLanguage = savedSettings.language;
+            if (languageSelect) languageSelect.value = currentLanguage;
+        }
+
+        if (themeValues.includes(savedSettings.backgroundTheme)) {
+            currentTheme = savedSettings.backgroundTheme;
+            if (themeSelect) themeSelect.value = currentTheme;
+        }
+
         const savedWpm = parseInt(savedSettings.wpm, 10);
         if (!isNaN(savedWpm) && savedWpm > 0) {
             okuyucu.hizGuncelle(savedWpm);
@@ -141,18 +328,96 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    const formatNumber = (value) => value.toLocaleString('en-US');
+    const applyTheme = () => {
+        document.body.dataset.bgTheme = currentTheme;
+        if (themeSelect) themeSelect.value = currentTheme;
+    };
+
+    const formatNumber = (value) => value.toLocaleString(currentLanguage === 'tr' ? 'tr-TR' : 'en-US');
 
     const formatRemainingTime = (remainingWords) => {
-        if (remainingWords <= 0) return 'Done';
+        if (remainingWords <= 0) return t('done');
 
         const minutes = remainingWords / okuyucu.hedefWPM;
-        if (minutes < 1) return '<1 min';
-        if (minutes < 60) return `${Math.ceil(minutes)} min`;
+        if (minutes < 1) return t('lessThanMinute');
+        if (minutes < 60) return `${Math.ceil(minutes)} ${t('minute')}`;
 
         const hours = Math.floor(minutes / 60);
         const mins = Math.round(minutes % 60);
-        return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+        return mins > 0 ? `${hours}${t('hour')} ${mins}${t('minuteShort')}` : `${hours}${t('hour')}`;
+    };
+
+    const applyLanguage = () => {
+        const strings = translations[currentLanguage] || translations.en;
+
+        document.documentElement.lang = strings.htmlLang;
+        document.title = strings.documentTitle;
+
+        setText('appTitle', strings.appTitle);
+        setText('appSubtitle', strings.appSubtitle);
+        setText('languageLabel', strings.language);
+        setText('themeLabel', strings.theme);
+        setText('wpmLabel', strings.speed);
+        setText('smartPacingLabel', strings.smartPacing);
+        setText('chunkLabel', strings.chunk);
+        setText('chapterLabel', strings.chapter);
+        setText('wordPageLabel', strings.wordPage);
+        setText('searchLabel', strings.searchPhrase);
+        setText('progressLabel', strings.progress);
+        setText('wordsLabel', strings.words);
+        setText('remainingLabel', strings.remaining);
+        setText('wordCounterLabel', strings.word);
+        if (resetText) resetText.textContent = strings.reset;
+
+        if (languageSelect) languageSelect.value = currentLanguage;
+        if (themeSelect) {
+            themeSelect.value = currentTheme;
+            Array.from(themeSelect.options).forEach((option, index) => {
+                option.textContent = strings.themeOptions[index] || option.textContent;
+            });
+        }
+        if (chunkSizeSelect) {
+            Array.from(chunkSizeSelect.options).forEach((option, index) => {
+                option.textContent = strings.chunkOptions[index] || option.textContent;
+            });
+        }
+        if (chapterSelect && chapterSelect.options.length === 1 && chapterSelect.options[0].value === '0') {
+            chapterSelect.options[0].textContent = strings.loading;
+        }
+
+        if (searchInput) searchInput.placeholder = strings.searchPlaceholder;
+        setAttr(settingsToggle, 'title', strings.settings);
+        setAttr(settingsToggle, 'aria-label', settingsMenu && !settingsMenu.hidden ? strings.closeSettings : strings.openSettings);
+        setAttr(themeSelect, 'aria-label', strings.themeAria);
+        setAttr(dropZone, 'title', strings.uploadTitle);
+        setAttr(dropZone, 'aria-label', strings.uploadAria);
+        setAttr(wpmSlider, 'aria-label', strings.wpmAria);
+        setAttr(smartSpeedToggle, 'aria-label', strings.smartPacingAria);
+        setAttr(chunkSizeSelect, 'aria-label', strings.chunkAria);
+        setAttr(searchBtn, 'title', strings.findNext);
+        setAttr(searchBtn, 'aria-label', strings.findNext);
+        if (progressFill && progressFill.parentElement) {
+            progressFill.parentElement.setAttribute('aria-label', strings.progressAria);
+        }
+        setAttr(readerContainer, 'aria-label', strings.currentWordAria);
+        setAttr(copyWordIndexBtn, 'title', strings.copyWordIndex);
+        setAttr(copyWordIndexBtn, 'aria-label', strings.copyWordIndex);
+        setAttr(fsPrevWordBtn, 'title', strings.previousWord);
+        setAttr(fsPrevWordBtn, 'aria-label', strings.previousWord);
+        setAttr(fsNextWordBtn, 'title', strings.nextWord);
+        setAttr(fsNextWordBtn, 'aria-label', strings.nextWord);
+        setAttr(fsWpmDownBtn, 'title', strings.slowDown);
+        setAttr(fsWpmDownBtn, 'aria-label', strings.decreaseSpeed);
+        setAttr(fsWpmUpBtn, 'title', strings.speedUp);
+        setAttr(fsWpmUpBtn, 'aria-label', strings.increaseSpeed);
+        setAttr(fullscreenBtn, 'title', document.fullscreenElement ? strings.exitFullscreen : strings.toggleFullscreen);
+        setAttr(fullscreenBtn, 'aria-label', document.fullscreenElement ? strings.exitFullscreen : strings.enterFullscreen);
+        setAttr(fsDarkModeBtn, 'title', readerWrapper && readerWrapper.classList.contains('fs-dark') ? strings.lightMode : strings.darkMode);
+        setAttr(fsDarkModeBtn, 'aria-label', readerWrapper && readerWrapper.classList.contains('fs-dark') ? strings.switchLight : strings.switchDark);
+
+        const placeholder = readerContainer ? readerContainer.querySelector('.placeholder-text') : null;
+        if (placeholder) placeholder.textContent = strings.placeholder;
+        updateUploadText();
     };
 
     const updateReadingStats = () => {
@@ -184,9 +449,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updatePlaybackLabels = () => {
-        const label = okuyucu.okuyorMu ? 'Pause reading' : 'Play reading';
+        const label = okuyucu.okuyorMu ? t('pauseReading') : t('playReading');
         if (playPauseBtn) playPauseBtn.setAttribute('aria-label', label);
         if (fsPlayPauseBtn) fsPlayPauseBtn.setAttribute('aria-label', label);
+    };
+
+    const updatePlayPauseControls = () => {
+        const isReading = okuyucu.okuyorMu;
+        if (playPauseIcon) playPauseIcon.textContent = isReading ? '⏸' : '▶';
+        if (playPauseText) playPauseText.textContent = isReading ? t('pause') : t('play');
+        if (fsPlayPauseBtn) fsPlayPauseBtn.textContent = `${isReading ? '⏸' : '▶'} ${isReading ? t('pause') : t('play')}`;
+        updatePlaybackLabels();
     };
 
     const canUsePausedControls = () => {
@@ -288,6 +561,58 @@ document.addEventListener('DOMContentLoaded', () => {
     const chapterSelect = document.getElementById('chapterSelect');
     const wordIndexInput = document.getElementById('wordIndexInput');
 
+    applyTheme();
+    applyLanguage();
+    updatePlayPauseControls();
+    updateReadingStats();
+
+    const setSettingsMenuOpen = (isOpen) => {
+        if (!settingsMenu || !settingsToggle) return;
+        settingsMenu.hidden = !isOpen;
+        settingsToggle.setAttribute('aria-expanded', String(isOpen));
+        settingsToggle.setAttribute('aria-label', isOpen ? t('closeSettings') : t('openSettings'));
+    };
+
+    if (settingsToggle && settingsMenu) {
+        settingsToggle.addEventListener('click', (event) => {
+            event.stopPropagation();
+            setSettingsMenuOpen(settingsMenu.hidden);
+        });
+
+        settingsMenu.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+
+        document.addEventListener('click', () => {
+            setSettingsMenuOpen(false);
+        });
+    }
+
+    if (languageSelect) {
+        languageSelect.addEventListener('change', (event) => {
+            const nextLanguage = event.target.value;
+            if (!translations[nextLanguage]) return;
+
+            currentLanguage = nextLanguage;
+            applyLanguage();
+            updatePlayPauseControls();
+            updateReadingStats();
+            saveSettings();
+            saveProgress(true);
+        });
+    }
+
+    if (themeSelect) {
+        themeSelect.addEventListener('change', (event) => {
+            const nextTheme = event.target.value;
+            if (!themeValues.includes(nextTheme)) return;
+
+            currentTheme = nextTheme;
+            applyTheme();
+            saveSettings();
+        });
+    }
+
     // Dosya İşleme (Ortak Fonksiyon)
     const handleFileUpload = async (file) => {
         if (!file) return;
@@ -298,7 +623,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isValid = validExtensions.some(ext => fileName.endsWith(ext));
         
         if (!isValid) {
-            alert('Lütfen sadece .txt veya .epub uzantılı bir dosya yükleyin.');
+            alert(t('invalidFile'));
             return;
         }
 
@@ -336,16 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 wordIndexInput.value = 0;
             }
 
-            if (uploadText) {
-                // İsim çok uzunsa ortasını kırp (İlk 15 ve son 8 karakteri göster)
-                let displayName = file.name;
-                if (displayName.length > 25) {
-                    const firstPart = displayName.substring(0, 15);
-                    const lastPart = displayName.substring(displayName.length - 8);
-                    displayName = `${firstPart}...${lastPart}`;
-                }
-                uploadText.textContent = `📖 ${displayName}`;
-            }
+            updateUploadText();
 
             // Kitap yüklendiğinde oynatma butonlarını aktif hale getir
             if (playPauseBtn) playPauseBtn.disabled = false;
@@ -387,7 +703,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentBookKey = null;
             currentBookName = '';
             console.error("Error parsing file:", error);
-            alert("Error parsing file: " + error.message);
+            alert(t('parseErrorPrefix') + error.message);
         }
     };
 
@@ -475,10 +791,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (matchIndex !== -1) {
                 okuyucu.setIndex(matchIndex);
                 if (wordIndexInput) wordIndexInput.value = matchIndex;
-                if (searchResult) searchResult.textContent = `Found at word ${matchIndex}`;
+                if (searchResult) searchResult.textContent = t('foundAtWord').replace('{index}', matchIndex);
                 saveProgress(true);
             } else {
-                if (searchResult) searchResult.textContent = "Phrase not found.";
+                if (searchResult) searchResult.textContent = t('phraseNotFound');
             }
             
             // Mesajı 3 saniye sonra temizle
@@ -497,28 +813,22 @@ document.addEventListener('DOMContentLoaded', () => {
             // Çalışıyorsa duraklat
             okuyucu.pause();
             saveProgress(true);
-            if (playPauseIcon) playPauseIcon.textContent = '▶';
-            if (playPauseText) playPauseText.textContent = 'Play';
             if (playPauseBtn) {
                 playPauseBtn.classList.remove('btn-pause');
                 playPauseBtn.classList.add('btn-play');
             }
-            if (fsPlayPauseBtn) fsPlayPauseBtn.textContent = '▶ Play';
-            updatePlaybackLabels();
+            updatePlayPauseControls();
             updateFullscreenControlState();
             // Tam ekranda durduğunda word-counter (copy) görünsün
             if (readerWrapper) readerWrapper.classList.add('paused');
         } else {
             // Duraklatıldıysa başlat
             okuyucu.play();
-            if (playPauseIcon) playPauseIcon.textContent = '⏸';
-            if (playPauseText) playPauseText.textContent = 'Pause';
             if (playPauseBtn) {
                 playPauseBtn.classList.remove('btn-play');
                 playPauseBtn.classList.add('btn-pause');
             }
-            if (fsPlayPauseBtn) fsPlayPauseBtn.textContent = '⏸ Pause';
-            updatePlaybackLabels();
+            updatePlayPauseControls();
             updateFullscreenControlState();
             // Okuma başlayınca word-counter'ı gizle
             if (readerWrapper) readerWrapper.classList.remove('paused');
@@ -540,7 +850,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (canUsePausedControls()) adjustWpm(10);
     });
 
-    updatePlaybackLabels();
+    updatePlayPauseControls();
     updateFullscreenControlState();
 
     // Klavye kısayolları: Space play/pause, oklar gezinme ve hız, F fullscreen.
@@ -551,6 +861,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.code === 'Space') {
             e.preventDefault();
             if (okuyucu.kelimeler.length > 0) togglePlayPause();
+        } else if (e.code === 'Escape') {
+            setSettingsMenuOpen(false);
         } else if (e.code === 'ArrowRight') {
             e.preventDefault();
             if (canUsePausedControls()) jumpByChunks(e.shiftKey ? 10 : 1);
@@ -580,27 +892,25 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Arayüzü başlangıç haline (kitap yüklenmemiş duruma) döndür
             if (fileInput) fileInput.value = '';
-            if (uploadText) uploadText.textContent = '📁 Select Book (.txt, .epub)';
+            updateUploadText();
             if (navControls) navControls.style.display = 'none';
             if (readingStats) readingStats.classList.add('is-hidden');
             updateReadingStats();
             if (readerContainer) {
-                readerContainer.innerHTML = '<span class="placeholder-text">Load a text to begin reading...</span>';
+                const placeholder = document.createElement('span');
+                placeholder.className = 'placeholder-text';
+                placeholder.textContent = t('placeholder');
+                readerContainer.replaceChildren(placeholder);
             }
 
             // Buton durumunu sıfırla ve deaktif et
             if (playPauseBtn) {
-                if (playPauseIcon) playPauseIcon.textContent = '▶';
-                if (playPauseText) playPauseText.textContent = 'Play';
                 playPauseBtn.classList.remove('btn-pause');
                 playPauseBtn.classList.add('btn-play');
                 playPauseBtn.disabled = true;
-                updatePlaybackLabels();
             }
-            if (fsPlayPauseBtn) {
-                fsPlayPauseBtn.textContent = '▶ Play';
-                fsPlayPauseBtn.disabled = true;
-            }
+            if (fsPlayPauseBtn) fsPlayPauseBtn.disabled = true;
+            updatePlayPauseControls();
             if (readerWrapper) readerWrapper.classList.remove('paused');
             updateFullscreenControlState();
         });
@@ -637,25 +947,24 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('fullscreenchange', () => {
             if (document.fullscreenElement) {
                 fullscreenBtn.textContent = '✕';
-                fullscreenBtn.title = 'Exit Fullscreen';
-                fullscreenBtn.setAttribute('aria-label', 'Exit fullscreen');
+                fullscreenBtn.title = t('exitFullscreen');
+                fullscreenBtn.setAttribute('aria-label', t('exitFullscreen'));
             } else {
                 fullscreenBtn.textContent = '⛶';
-                fullscreenBtn.title = 'Toggle Fullscreen';
-                fullscreenBtn.setAttribute('aria-label', 'Enter fullscreen');
+                fullscreenBtn.title = t('toggleFullscreen');
+                fullscreenBtn.setAttribute('aria-label', t('enterFullscreen'));
             }
         });
     }
 
     // 8. Dark Mode Toggle (Tam Ekranda Karanlık/Aydınlık Mod)
-    const fsDarkModeBtn = document.getElementById('fsDarkModeBtn');
     if (fsDarkModeBtn && readerWrapper) {
         fsDarkModeBtn.addEventListener('click', () => {
             readerWrapper.classList.toggle('fs-dark');
             const isDark = readerWrapper.classList.contains('fs-dark');
             fsDarkModeBtn.textContent = isDark ? '☀️' : '🌙';
-            fsDarkModeBtn.title = isDark ? 'Light Mode' : 'Dark Mode';
-            fsDarkModeBtn.setAttribute('aria-label', isDark ? 'Switch to light fullscreen theme' : 'Switch to dark fullscreen theme');
+            fsDarkModeBtn.title = isDark ? t('lightMode') : t('darkMode');
+            fsDarkModeBtn.setAttribute('aria-label', isDark ? t('switchLight') : t('switchDark'));
         });
     }
 });
