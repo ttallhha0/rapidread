@@ -1112,6 +1112,150 @@ input:checked+.slider:before {
     background: rgba(58, 46, 30, 0.3);
 }
 
+body.has-ios-fullscreen {
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    touch-action: none;
+}
+
+.reader-wrapper.is-ios-fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    margin: 0;
+    background: linear-gradient(170deg, #f5ead6 0%, #f0e0c6 30%, #e8d5b3 70%, #dfc9a5 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    border: none;
+    border-radius: 0;
+    width: 100vw;
+    width: 100dvw;
+    height: 100vh;
+    height: 100dvh;
+}
+
+.reader-wrapper.is-ios-fullscreen .reader-box {
+    font-size: clamp(58px, 13vw, 130px);
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    width: 100vw;
+    width: 100dvw;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    inset: 0;
+    color: #3a2e1e;
+}
+
+.reader-wrapper.is-ios-fullscreen .reader-notch {
+    display: none;
+}
+
+.reader-wrapper.is-ios-fullscreen .fullscreen-btn {
+    position: fixed;
+    top: max(20px, env(safe-area-inset-top));
+    right: max(20px, env(safe-area-inset-right));
+    background: rgba(58, 46, 30, 0.15);
+    color: #5a4a32;
+    font-size: 22px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    z-index: 10000;
+    border: 1px solid rgba(58, 46, 30, 0.2);
+}
+
+.reader-wrapper.is-ios-fullscreen .fullscreen-btn:hover {
+    background: rgba(58, 46, 30, 0.3);
+    color: #3a2e1e;
+}
+
+.reader-wrapper.is-ios-fullscreen .word-counter {
+    display: none;
+}
+
+.reader-wrapper.is-ios-fullscreen.paused .word-counter {
+    display: flex;
+    position: fixed;
+    bottom: max(130px, calc(env(safe-area-inset-bottom) + 118px));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    background: rgba(58, 46, 30, 0.15);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(58, 46, 30, 0.2);
+    animation: fadeInUp 0.25s ease;
+    color: #3a2e1e;
+}
+
+.reader-wrapper.is-ios-fullscreen.paused .word-counter .word-counter-label {
+    color: #6b5b45;
+}
+
+.reader-wrapper.is-ios-fullscreen.paused .word-counter .word-counter-value {
+    color: #5a4a32;
+}
+
+.reader-wrapper.is-ios-fullscreen.paused .word-counter .word-counter-copy {
+    background: rgba(58, 46, 30, 0.12);
+    border-color: rgba(58, 46, 30, 0.2);
+    color: #5a4a32;
+}
+
+.reader-wrapper.is-ios-fullscreen .fullscreen-controls {
+    display: flex;
+    position: fixed;
+    bottom: max(48px, calc(env(safe-area-inset-bottom) + 28px));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    gap: 14px;
+    align-items: center;
+}
+
+.reader-wrapper.is-ios-fullscreen.paused .fullscreen-side-controls {
+    display: block;
+}
+
+.reader-wrapper.is-ios-fullscreen.paused .fs-side-btn {
+    display: flex;
+}
+
+.reader-wrapper.is-ios-fullscreen .fs-btn:disabled {
+    background: rgba(58, 46, 30, 0.08) !important;
+    color: rgba(58, 46, 30, 0.35) !important;
+    border: 1px solid rgba(58, 46, 30, 0.1) !important;
+    box-shadow: none !important;
+    cursor: not-allowed;
+}
+
+.reader-wrapper.is-ios-fullscreen .fs-darkmode-btn {
+    display: block;
+    position: fixed;
+    top: max(20px, env(safe-area-inset-top));
+    left: max(20px, env(safe-area-inset-left));
+    background: rgba(58, 46, 30, 0.15);
+    color: #5a4a32;
+    font-size: 22px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    z-index: 10000;
+    border: 1px solid rgba(58, 46, 30, 0.2);
+}
+
+.reader-wrapper.is-ios-fullscreen .fs-darkmode-btn:hover {
+    background: rgba(58, 46, 30, 0.3);
+}
+
 /* ==========================================================================
    DARK MODE (Tam Ekran)
    Varsayılan koyu tema - .fs-dark sınıfıyla aktif
@@ -1204,6 +1348,78 @@ input:checked+.slider:before {
 }
 
 .reader-wrapper.fs-dark:fullscreen.paused .word-counter .word-counter-copy {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+}
+
+.reader-wrapper.fs-dark.is-ios-fullscreen {
+    background: #0f172a;
+    background-image:
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+}
+
+.reader-wrapper.fs-dark.is-ios-fullscreen .reader-box {
+    color: var(--text-main);
+}
+
+.reader-wrapper.fs-dark.is-ios-fullscreen .fullscreen-btn,
+.reader-wrapper.fs-dark.is-ios-fullscreen .fs-darkmode-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.reader-wrapper.fs-dark.is-ios-fullscreen .fullscreen-btn:hover,
+.reader-wrapper.fs-dark.is-ios-fullscreen .fs-darkmode-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.reader-wrapper.fs-dark.is-ios-fullscreen .fs-btn,
+.reader-wrapper.fs-dark.is-ios-fullscreen .fs-wpm-stepper,
+.reader-wrapper.fs-dark.is-ios-fullscreen .fs-side-btn {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.reader-wrapper.fs-dark.is-ios-fullscreen .fs-btn:hover,
+.reader-wrapper.fs-dark.is-ios-fullscreen .fs-side-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.reader-wrapper.fs-dark.is-ios-fullscreen .fs-stepper-btn,
+.reader-wrapper.fs-dark.is-ios-fullscreen .fs-wpm-value {
+    color: white;
+}
+
+.reader-wrapper.fs-dark.is-ios-fullscreen .fs-stepper-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.reader-wrapper.fs-dark.is-ios-fullscreen .fs-btn:disabled {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.reader-wrapper.fs-dark.is-ios-fullscreen.paused .word-counter {
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-main);
+}
+
+.reader-wrapper.fs-dark.is-ios-fullscreen.paused .word-counter .word-counter-label {
+    color: var(--text-muted);
+}
+
+.reader-wrapper.fs-dark.is-ios-fullscreen.paused .word-counter .word-counter-value {
+    color: var(--accent-success);
+}
+
+.reader-wrapper.fs-dark.is-ios-fullscreen.paused .word-counter .word-counter-copy {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.1);
     color: var(--text-main);

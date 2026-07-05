@@ -1,5 +1,5 @@
-import { dosyaOkuVeKelimelereAyir } from './parser.js?v=20260621-3';
-import { RsvpReader } from './reader.js?v=20260621-3';
+import { dosyaOkuVeKelimelereAyir } from './parser.js?v=20260706-1';
+import { RsvpReader } from './reader.js?v=20260706-1';
 
 // HTML içeriği tamamen yüklendikten sonra olay dinleyicilerini (Event Listeners) ekleyelim
 document.addEventListener('DOMContentLoaded', () => {
@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentLanguage = 'en';
     let currentTheme = 'midnight';
     let lastProgressSaveAt = 0;
+    let fallbackFullscreenScrollY = 0;
     const themeValues = ['midnight', 'forest', 'ocean', 'graphite', 'sage', 'rosewood', 'sepia', 'aubergine', 'dawn', 'moss'];
 
     const translations = {
@@ -410,8 +411,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setAttr(fsWpmDownBtn, 'aria-label', strings.decreaseSpeed);
         setAttr(fsWpmUpBtn, 'title', strings.speedUp);
         setAttr(fsWpmUpBtn, 'aria-label', strings.increaseSpeed);
-        setAttr(fullscreenBtn, 'title', document.fullscreenElement ? strings.exitFullscreen : strings.toggleFullscreen);
-        setAttr(fullscreenBtn, 'aria-label', document.fullscreenElement ? strings.exitFullscreen : strings.enterFullscreen);
+        setAttr(fullscreenBtn, 'title', isFullscreenActive() ? strings.exitFullscreen : strings.toggleFullscreen);
+        setAttr(fullscreenBtn, 'aria-label', isFullscreenActive() ? strings.exitFullscreen : strings.enterFullscreen);
         setAttr(fsDarkModeBtn, 'title', readerWrapper && readerWrapper.classList.contains('fs-dark') ? strings.lightMode : strings.darkMode);
         setAttr(fsDarkModeBtn, 'aria-label', readerWrapper && readerWrapper.classList.contains('fs-dark') ? strings.switchLight : strings.switchDark);
 
@@ -513,15 +514,104 @@ document.addEventListener('DOMContentLoaded', () => {
         saveProgress(true);
     };
 
-    const toggleFullscreen = () => {
+    const isFallbackFullscreenActive = () => {
+        return !!readerWrapper && readerWrapper.classList.contains('is-ios-fullscreen');
+    };
+
+    const isNativeFullscreenActive = () => {
+        return document.fullscreenElement === readerWrapper ||
+            document.webkitFullscreenElement === readerWrapper;
+    };
+
+    const isFullscreenActive = () => {
+        return isNativeFullscreenActive() || isFallbackFullscreenActive();
+    };
+
+    const updateFullscreenButtonState = () => {
+        if (!fullscreenBtn) return;
+
+        if (isFullscreenActive()) {
+            fullscreenBtn.textContent = '✕';
+            fullscreenBtn.title = t('exitFullscreen');
+            fullscreenBtn.setAttribute('aria-label', t('exitFullscreen'));
+        } else {
+            fullscreenBtn.textContent = '⛶';
+            fullscreenBtn.title = t('toggleFullscreen');
+            fullscreenBtn.setAttribute('aria-label', t('enterFullscreen'));
+        }
+    };
+
+    const enterFallbackFullscreen = () => {
+        if (!readerWrapper || isFallbackFullscreenActive()) return;
+
+        fallbackFullscreenScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+        document.body.style.top = `-${fallbackFullscreenScrollY}px`;
+        document.body.classList.add('has-ios-fullscreen');
+        readerWrapper.classList.add('is-ios-fullscreen');
+        updateFullscreenButtonState();
+    };
+
+    const exitFallbackFullscreen = () => {
+        if (!readerWrapper || !isFallbackFullscreenActive()) return;
+
+        readerWrapper.classList.remove('is-ios-fullscreen');
+        document.body.classList.remove('has-ios-fullscreen');
+        document.body.style.top = '';
+        window.scrollTo(0, fallbackFullscreenScrollY);
+        updateFullscreenButtonState();
+    };
+
+    const requestNativeFullscreen = () => {
+        if (!readerWrapper) return { attempted: false, promise: null };
+        const request = readerWrapper.requestFullscreen || readerWrapper.webkitRequestFullscreen;
+        if (!request) return { attempted: false, promise: null };
+
+        return {
+            attempted: true,
+            promise: request.call(readerWrapper)
+        };
+    };
+
+    const exitNativeFullscreen = () => {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        return exit ? exit.call(document) : null;
+    };
+
+    const toggleFullscreen = async () => {
         if (!readerWrapper) return;
 
-        if (!document.fullscreenElement) {
-            readerWrapper.requestFullscreen().catch(err => {
-                console.error(`Error attempting to enable fullscreen: ${err.message}`);
-            });
-        } else {
-            document.exitFullscreen();
+        if (isFallbackFullscreenActive()) {
+            exitFallbackFullscreen();
+            return;
+        }
+
+        if (isNativeFullscreenActive()) {
+            exitNativeFullscreen();
+            return;
+        }
+
+        const nativeRequest = requestNativeFullscreen();
+        if (!nativeRequest.attempted) {
+            enterFallbackFullscreen();
+            return;
+        }
+
+        if (!nativeRequest.promise || typeof nativeRequest.promise.then !== 'function') {
+            window.setTimeout(() => {
+                if (!isNativeFullscreenActive()) {
+                    enterFallbackFullscreen();
+                } else {
+                    updateFullscreenButtonState();
+                }
+            }, 250);
+            return;
+        }
+
+        try {
+            await nativeRequest.promise;
+        } catch (err) {
+            console.warn(`Native fullscreen unavailable, using fallback: ${err.message}`);
+            enterFallbackFullscreen();
         }
     };
 
@@ -862,6 +952,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             if (okuyucu.kelimeler.length > 0) togglePlayPause();
         } else if (e.code === 'Escape') {
+            if (isFallbackFullscreenActive()) exitFallbackFullscreen();
             setSettingsMenuOpen(false);
         } else if (e.code === 'ArrowRight') {
             e.preventDefault();
@@ -944,17 +1035,8 @@ document.addEventListener('DOMContentLoaded', () => {
         fullscreenBtn.addEventListener('click', toggleFullscreen);
         
         // Tam ekran durumu değiştiğinde ikon güncelleme (Opsiyonel)
-        document.addEventListener('fullscreenchange', () => {
-            if (document.fullscreenElement) {
-                fullscreenBtn.textContent = '✕';
-                fullscreenBtn.title = t('exitFullscreen');
-                fullscreenBtn.setAttribute('aria-label', t('exitFullscreen'));
-            } else {
-                fullscreenBtn.textContent = '⛶';
-                fullscreenBtn.title = t('toggleFullscreen');
-                fullscreenBtn.setAttribute('aria-label', t('enterFullscreen'));
-            }
-        });
+        document.addEventListener('fullscreenchange', updateFullscreenButtonState);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
     }
 
     // 8. Dark Mode Toggle (Tam Ekranda Karanlık/Aydınlık Mod)
