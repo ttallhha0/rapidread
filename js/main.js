@@ -1,5 +1,5 @@
-import { dosyaOkuVeKelimelereAyir } from './parser.js?v=20260706-1';
-import { RsvpReader } from './reader.js?v=20260706-1';
+import { dosyaOkuVeKelimelereAyir } from './parser.js?v=20260706-2';
+import { RsvpReader } from './reader.js?v=20260706-2';
 
 // HTML içeriği tamamen yüklendikten sonra olay dinleyicilerini (Event Listeners) ekleyelim
 document.addEventListener('DOMContentLoaded', () => {
@@ -60,9 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentBookName = '';
     let currentLanguage = 'en';
     let currentTheme = 'midnight';
+    let currentFullscreenTheme = 'parchment';
     let lastProgressSaveAt = 0;
     let fallbackFullscreenScrollY = 0;
     const themeValues = ['midnight', 'forest', 'ocean', 'graphite', 'sage', 'rosewood', 'sepia', 'aubergine', 'dawn', 'moss'];
+    const fullscreenThemeValues = ['parchment', 'midnight', 'graphite', 'sage', 'ocean', 'rose', 'sepia', 'dusk', 'moss'];
 
     const translations = {
         en: {
@@ -105,6 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
             previousWord: 'Previous word',
             nextWord: 'Next word',
             fullscreenSpeedControls: 'Fullscreen speed controls',
+            fullscreenThemeButton: 'Fullscreen theme: {theme}. Tap to change.',
+            fullscreenThemeNames: ['Parchment', 'Midnight', 'Graphite', 'Sage Paper', 'Calm Ocean', 'Muted Rose', 'Sepia', 'Soft Dusk', 'Moss'],
             slowDown: 'Slow down',
             decreaseSpeed: 'Decrease reading speed',
             speedUp: 'Speed up',
@@ -117,11 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleFullscreen: 'Toggle Fullscreen',
             enterFullscreen: 'Enter fullscreen',
             exitFullscreen: 'Exit fullscreen',
-            toggleTheme: 'Toggle fullscreen theme',
-            lightMode: 'Light Mode',
-            darkMode: 'Dark Mode',
-            switchLight: 'Switch to light fullscreen theme',
-            switchDark: 'Switch to dark fullscreen theme',
+            toggleTheme: 'Cycle fullscreen theme',
             done: 'Done',
             lessThanMinute: '<1 min',
             minute: 'min',
@@ -172,6 +172,8 @@ document.addEventListener('DOMContentLoaded', () => {
             previousWord: 'Önceki kelime',
             nextWord: 'Sonraki kelime',
             fullscreenSpeedControls: 'Tam ekran hız kontrolleri',
+            fullscreenThemeButton: 'Tam ekran teması: {theme}. Değiştirmek için dokun.',
+            fullscreenThemeNames: ['Parşömen', 'Gece', 'Grafit', 'Adaçayı Kağıdı', 'Sakin Okyanus', 'Soluk Gül', 'Sepya', 'Yumuşak Alacakaranlık', 'Yosun'],
             slowDown: 'Yavaşlat',
             decreaseSpeed: 'Okuma hızını azalt',
             speedUp: 'Hızlandır',
@@ -185,10 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
             enterFullscreen: 'Tam ekrana geç',
             exitFullscreen: 'Tam ekrandan çık',
             toggleTheme: 'Tam ekran temasını değiştir',
-            lightMode: 'Aydınlık Mod',
-            darkMode: 'Karanlık Mod',
-            switchLight: 'Aydınlık tam ekran temasına geç',
-            switchDark: 'Karanlık tam ekran temasına geç',
             done: 'Bitti',
             lessThanMinute: '<1 dk',
             minute: 'dk',
@@ -270,7 +268,8 @@ document.addEventListener('DOMContentLoaded', () => {
             smartSpeedEnabled: okuyucu.smartSpeedEnabled,
             chunkSize: okuyucu.chunkSize,
             language: currentLanguage,
-            backgroundTheme: currentTheme
+            backgroundTheme: currentTheme,
+            fullscreenTheme: currentFullscreenTheme
         });
     };
 
@@ -310,6 +309,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (themeSelect) themeSelect.value = currentTheme;
         }
 
+        if (fullscreenThemeValues.includes(savedSettings.fullscreenTheme)) {
+            currentFullscreenTheme = savedSettings.fullscreenTheme;
+        }
+
         const savedWpm = parseInt(savedSettings.wpm, 10);
         if (!isNaN(savedWpm) && savedWpm > 0) {
             okuyucu.hizGuncelle(savedWpm);
@@ -332,6 +335,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const applyTheme = () => {
         document.body.dataset.bgTheme = currentTheme;
         if (themeSelect) themeSelect.value = currentTheme;
+    };
+
+    const getFullscreenThemeName = () => {
+        const index = fullscreenThemeValues.indexOf(currentFullscreenTheme);
+        const names = translations[currentLanguage].fullscreenThemeNames || translations.en.fullscreenThemeNames;
+        return names[index] || currentFullscreenTheme;
+    };
+
+    const updateFullscreenThemeButton = () => {
+        if (!fsDarkModeBtn) return;
+
+        fsDarkModeBtn.textContent = '🎨';
+        const label = t('fullscreenThemeButton').replace('{theme}', getFullscreenThemeName());
+        fsDarkModeBtn.title = label;
+        fsDarkModeBtn.setAttribute('aria-label', label);
+    };
+
+    const applyFullscreenTheme = () => {
+        if (!readerWrapper) return;
+
+        readerWrapper.dataset.fsTheme = currentFullscreenTheme;
+        readerWrapper.classList.toggle('fs-dark', currentFullscreenTheme === 'midnight');
+        updateFullscreenThemeButton();
+    };
+
+    const cycleFullscreenTheme = () => {
+        const currentIndex = fullscreenThemeValues.indexOf(currentFullscreenTheme);
+        const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % fullscreenThemeValues.length;
+        currentFullscreenTheme = fullscreenThemeValues[nextIndex];
+        applyFullscreenTheme();
+        saveSettings();
     };
 
     const formatNumber = (value) => value.toLocaleString(currentLanguage === 'tr' ? 'tr-TR' : 'en-US');
@@ -413,8 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setAttr(fsWpmUpBtn, 'aria-label', strings.increaseSpeed);
         setAttr(fullscreenBtn, 'title', isFullscreenActive() ? strings.exitFullscreen : strings.toggleFullscreen);
         setAttr(fullscreenBtn, 'aria-label', isFullscreenActive() ? strings.exitFullscreen : strings.enterFullscreen);
-        setAttr(fsDarkModeBtn, 'title', readerWrapper && readerWrapper.classList.contains('fs-dark') ? strings.lightMode : strings.darkMode);
-        setAttr(fsDarkModeBtn, 'aria-label', readerWrapper && readerWrapper.classList.contains('fs-dark') ? strings.switchLight : strings.switchDark);
+        updateFullscreenThemeButton();
 
         const placeholder = readerContainer ? readerContainer.querySelector('.placeholder-text') : null;
         if (placeholder) placeholder.textContent = strings.placeholder;
@@ -652,6 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const wordIndexInput = document.getElementById('wordIndexInput');
 
     applyTheme();
+    applyFullscreenTheme();
     applyLanguage();
     updatePlayPauseControls();
     updateReadingStats();
@@ -1039,14 +1073,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
     }
 
-    // 8. Dark Mode Toggle (Tam Ekranda Karanlık/Aydınlık Mod)
+    // 8. Fullscreen Theme Cycle (Tam Ekranda tema değiştirme)
     if (fsDarkModeBtn && readerWrapper) {
-        fsDarkModeBtn.addEventListener('click', () => {
-            readerWrapper.classList.toggle('fs-dark');
-            const isDark = readerWrapper.classList.contains('fs-dark');
-            fsDarkModeBtn.textContent = isDark ? '☀️' : '🌙';
-            fsDarkModeBtn.title = isDark ? t('lightMode') : t('darkMode');
-            fsDarkModeBtn.setAttribute('aria-label', isDark ? t('switchLight') : t('switchDark'));
-        });
+        fsDarkModeBtn.addEventListener('click', cycleFullscreenTheme);
     }
 });
