@@ -1,5 +1,5 @@
-import { dosyaOkuVeKelimelereAyir } from './parser.js?v=20260706-2';
-import { RsvpReader } from './reader.js?v=20260706-2';
+import { dosyaOkuVeKelimelereAyir } from './parser.js?v=20260706-5';
+import { RsvpReader } from './reader.js?v=20260706-5';
 
 // HTML içeriği tamamen yüklendikten sonra olay dinleyicilerini (Event Listeners) ekleyelim
 document.addEventListener('DOMContentLoaded', () => {
@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentFullscreenTheme = 'parchment';
     let lastProgressSaveAt = 0;
     let fallbackFullscreenScrollY = 0;
+    let fallbackFullscreenPlaceholder = null;
     const themeValues = ['midnight', 'forest', 'ocean', 'graphite', 'sage', 'rosewood', 'sepia', 'aubergine', 'dawn', 'moss'];
     const fullscreenThemeValues = ['parchment', 'midnight', 'graphite', 'sage', 'ocean', 'rose', 'sepia', 'dusk', 'moss'];
 
@@ -578,7 +579,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!readerWrapper || isFallbackFullscreenActive()) return;
 
         fallbackFullscreenScrollY = window.scrollY || document.documentElement.scrollTop || 0;
-        document.body.style.top = `-${fallbackFullscreenScrollY}px`;
+        fallbackFullscreenPlaceholder = document.createComment('reader fullscreen placeholder');
+        readerWrapper.parentNode.insertBefore(fallbackFullscreenPlaceholder, readerWrapper);
+        document.body.appendChild(readerWrapper);
+        document.documentElement.classList.add('has-ios-fullscreen');
         document.body.classList.add('has-ios-fullscreen');
         readerWrapper.classList.add('is-ios-fullscreen');
         updateFullscreenButtonState();
@@ -588,8 +592,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!readerWrapper || !isFallbackFullscreenActive()) return;
 
         readerWrapper.classList.remove('is-ios-fullscreen');
+        document.documentElement.classList.remove('has-ios-fullscreen');
         document.body.classList.remove('has-ios-fullscreen');
-        document.body.style.top = '';
+        if (fallbackFullscreenPlaceholder && fallbackFullscreenPlaceholder.parentNode) {
+            fallbackFullscreenPlaceholder.parentNode.insertBefore(readerWrapper, fallbackFullscreenPlaceholder);
+            fallbackFullscreenPlaceholder.remove();
+        }
+        fallbackFullscreenPlaceholder = null;
         window.scrollTo(0, fallbackFullscreenScrollY);
         updateFullscreenButtonState();
     };
